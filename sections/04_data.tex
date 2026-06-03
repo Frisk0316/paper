@@ -1,0 +1,183 @@
+\section{Panel Overview}
+
+The empirical analysis uses the replication package supplied with this
+thesis rather than re-downloading every raw input from its original upstream
+provider.
+The base file, \texttt{crypto\_panel\_features.npz}, is a processed weekly
+cryptocurrency panel with $T = 324$ calendar weeks
+(2020-01-05 to 2026-03-15), $N = 86$ tickers, one next-week return target,
+and 49 pre-existing predictor columns.
+The augmented file, \texttt{crypto\_panel\_features\_with\_etf.npz}, appends
+four granular ETF-flow variables, so the final research panel has 53
+predictor columns.
+The six information sets used in the empirical comparisons draw on a
+42-feature subset of those columns.
+
+The base panel is treated as a processed input because the current repository
+does not contain enough raw-vendor metadata to reconstruct every original
+source for the 49 pre-existing variables.
+For that reason, the data discussion below separates directly observable
+replication files from upstream provenance that is not recoverable from the
+files provided.
+This is a deliberate reporting constraint: feature names and transformations
+are reported when they can be inspected in the files and code, but external
+vendors are not attributed unless the repository or an official source
+supports the attribution.
+
+Missing values are encoded as $-99.99$ and masked in both loss computation
+and portfolio evaluation.
+The fixed 86-token universe is therefore best interpreted as the asset
+universe encoded in the replication package, not as a fully auditable
+historical listing universe.
+
+\section{Observed Data Files and Provenance}
+
+\Cref{tab:data_provenance} lists the data files that can be directly verified
+in the replication package.
+Only the two Farside CSV files are raw external downloads visible in the
+repository.
+The NPZ files are processed research inputs or saved benchmark arrays.
+
+\begin{table}[t]
+\centering
+\caption{Directly observed data files in the replication package.}
+\label{tab:data_provenance}
+\scriptsize
+\begin{tabularx}{\linewidth}{p{0.21\linewidth}X p{0.16\linewidth}X p{0.12\linewidth}}
+\toprule
+\thead{File} & \thead{Variables / role} & \thead{Period} &
+\thead{Construction step} & \thead{Raw source observable?} \\
+\midrule
+\texttt{crypto\_panel\_features.npz}
+  & Processed base panel: dates, tickers, next-week returns, and 49
+    pre-existing predictors.
+  & Weekly, 2020-01-05--2026-03-15
+  & Loaded as the pre-existing base panel; no raw-source reconstruction is
+    possible from the current files.
+  & No \\
+\texttt{crypto\_panel\_features\_with\_etf.npz}
+  & Final v6 panel after appending four Farside ETF variables.
+  & Weekly, 2020-01-05--2026-03-15
+  & Constructed by augmenting the base panel with weekly GBTC, BTC ex-GBTC,
+    ETHE, and ETH ex-ETHE flow variables.
+  & Partly \\
+\texttt{market\_cap.npz}
+  & Saved market-cap matrix used for market benchmark construction.
+  & Weekly, 2020-01-05--2026-03-15
+  & Loaded as an aligned matrix for weighting and benchmark calculations.
+  & No \\
+\texttt{farside\_btc.csv}
+  & Daily U.S. spot Bitcoin ETF flow table, including GBTC and total flows.
+  & Daily rows, 2024-01-11--2026-03-06
+  & Parsed from CSV, converted to signed values, then aggregated to weekly
+    GBTC and BTC ex-GBTC flows.
+  & Yes \\
+\texttt{farside\_eth.csv}
+  & Daily U.S. spot Ethereum ETF flow table, including ETHE and total flows.
+  & Daily rows, 2024-07-23--2026-03-06
+  & Parsed from CSV, converted to signed values, then aggregated to weekly
+    ETHE and ETH ex-ETHE flows.
+  & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The Farside files correspond to the Bitcoin and Ethereum ETF flow tables
+published by Farside Investors \citep{bitcoin_etf_farside,ethereum_etf_farside}.
+In the CSV format, parenthesized values denote outflows and are parsed as
+negative numbers, dashes are treated as missing or zero-flow cells depending
+on the aggregation step, and daily rows are aggregated to the weekly panel
+calendar.
+For each week, flows in the interval from the previous panel date to the
+current panel date are summed.
+The four appended variables are GBTC flow, total Bitcoin ETF flow excluding
+GBTC, ETHE flow, and total Ethereum ETF flow excluding ETHE.
+Each weekly series is then transformed with the same 52-week rolling
+z-score rule used for other time-series predictors.
+
+\section{Feature Categories}
+
+\Cref{tab:features} summarizes the 42 features actually used in the model
+comparisons.
+The table reports variable groups and examples; it should not be read as a
+claim about raw upstream vendors for the pre-existing base-panel variables.
+The grouping reflects the main conceptual distinction in the paper: some
+signals are slow-moving and structural, whereas others are event-like and
+time-dependent.
+
+\begin{table}[t]
+\centering
+\caption{Feature categories used in the empirical model comparisons.
+         $M_g$ = number of features in group $g$.}
+\label{tab:features}
+\small
+\begin{tabular}{llc}
+\toprule
+\thead{Group} & \thead{Examples} & \thead{$M_g$} \\
+\midrule
+Price \& Momentum    & 1w/4w/12w/26w/52w returns               & 5  \\
+Technical            & RSI, Bollinger \%, ATR, OBV, volume ratio & 6  \\
+On-chain             & Active addresses, NVT, MVRV, net flow   & 5  \\
+Macro \& Sentiment   & Fear-greed index, equity, FX, volatility, metal returns & 11 \\
+ETF \& Prediction Market & BTC/ETH ETF flow fields, BTC probability field & 6  \\
+Trump Social Media   & Post count, caps ratio, tariff score, crypto score, sentiment & 5  \\
+Farside ETF Granular & GBTC, BTC ex-GBTC, ETHE, ETH ex-ETHE    & 4  \\
+\midrule
+Total                &                                          & 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Data Splits}
+\label{sec:data:splits}
+
+We partition the panel chronologically into training (70\%, weeks 0--226),
+validation (15\%, weeks 227--274), and test (15\%, weeks 275--323),
+corresponding to 49 held-out panel weeks.
+Because the saved prediction masks exclude one test week from valid
+long-short portfolio construction, the reported Sharpe ratios are computed
+from 48 weekly portfolio-return observations.
+Hyperparameters are selected on the validation set, and the test set is used
+only for final reporting.
+This preserves the temporal ordering of the problem and avoids contaminating
+evaluation with repeated test-period feedback.
+
+\section{Look-ahead Bias}
+\label{sec:data:lookahead}
+
+The replication code applies time-series standardization using a rolling
+52-week z-score.
+At week $t$, the mean and standard deviation are computed over information
+available through week $t$.
+No future panel dates enter the normalization window.
+
+For the Farside ETF variables, daily rows are first assigned to the
+corresponding panel week and then standardized.
+The inclusion of week $t$ in its own rolling mean gives the current
+observation weight $1/52 \approx 2\%$ once the full window is available.
+This avoids future leakage, although it still means that weekly ETF-flow
+features are contemporaneous weekly aggregates rather than signals observed
+strictly before the start of the week.
+The same timing interpretation applies to all processed weekly predictors
+whose raw timestamp conventions are not recoverable from the base panel.
+
+\section{Provenance and Survivorship Limitations}
+\label{sec:data:survival}
+
+Two limitations follow from the available replication files.
+First, the upstream raw sources for the 49 pre-existing base-panel variables
+cannot be fully audited from the current repository.
+This affects source attribution, not the internal consistency of the model
+comparisons: every method uses the same processed panel, feature
+configurations, masks, and chronological splits.
+
+Second, the fixed 86-token universe may contain survivorship bias.
+The repository provides the final ticker list but not a complete historical
+listing-and-delisting rule.
+Tokens that were historically relevant but absent from the fixed universe
+would therefore be excluded from the analysis.
+The paper should consequently be read primarily as evidence on the relative
+suitability of objective functions and model architectures for a fixed
+cross-sectional cryptocurrency ranking problem, rather than as an
+unconditional claim about live investability of the entire cryptocurrency
+market.

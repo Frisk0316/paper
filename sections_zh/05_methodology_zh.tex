@@ -1,0 +1,186 @@
+% 對應英文：sections/05_methodology.tex
+
+\section{問題形式化}
+
+設 $\bx_{i,t} \in \R^M$ 為資產 $i$ 在第 $t$ 週的特徵向量，
+$r_{i,t+1}$ 為下一週的實現報酬。
+我們的目標是學習一個評分函數 $f_\theta : \R^M \to \R$，
+使得當 $r_{i,t+1} > r_{j,t+1}$ 時，$f_\theta(\bx_{i,t}) > f_\theta(\bx_{j,t})$
+對第 $t$ 週橫截面中所有 $(i,j)$ 配對成立。
+我們在每週依 $f_\theta(\bx_{\cdot,t})$ 做多頂部十分位、放空底部十分位，
+構建多空投資組合。
+
+\section{排名正規化的 ListNet 損失}
+\label{sec:method:loss}
+
+標準 ListNet（Cao 等人，2007）透過帶溫度參數 $\tau$ 的 softmax
+將分數與目標轉換為概率分布：
+\begin{equation}
+  P_i = \frac{\exp(s_i / \tau)}{\sum_j \exp(s_j / \tau)}, \quad
+  Q_i = \frac{\exp(y_i / \tau)}{\sum_j \exp(y_j / \tau)},
+\end{equation}
+其中 $s_i = f_\theta(\bx_{i,t})$，$y_i = r_{i,t+1}$。
+損失為交叉熵 $\cL = -\sum_i Q_i \log P_i$。
+
+\paragraph{原始報酬的問題。}
+當 $y_i = r_{i,t+1}$ 時，在波動性大的週次，目標分布 $Q$ 會被少數極端報酬的資產主導；
+在平靜的週次則接近均勻分布。
+這種尺度敏感性在加密貨幣報酬的異質波動率環境中使訓練不穩定。
+
+\paragraph{排名百分位正規化。}
+依循 Poh 等人（2021），以橫截面排名百分位取代原始報酬：
+\begin{equation}
+  \tilde{y}_{i,t} = \frac{\mathrm{rank}(r_{i,t+1};\, \{r_{j,t+1}\}_{j=1}^N) - 1}{N - 1}
+  \in [0, 1],
+\end{equation}
+使表現最佳的資產始終獲得 $\tilde{y} = 1$，最差的始終獲得 $\tilde{y} = 0$，
+與當週報酬的絕對幅度無關。
+在上述公式中以 $\tilde{y}_{i,t}$ 取代 $y_i$，可確保每個資產對目標分布的貢獻均等，
+損失梯度對橫截面波動率縮放不變。
+
+\section{LSTM 架構}
+\label{sec:method:lstm}
+
+LSTM 模型先對每個資產的 $L$ 步特徵歷史進行編碼，再執行跨資產比較。
+給定特徵序列 $X_i = (\bx_{i,t-L+1}, \dots, \bx_{i,t}) \in \R^{L \times M}$，
+前向傳播步驟如下：
+
+\begin{enumerate}[nosep]
+  \item \textbf{輸入投影與位置編碼。}
+        $H = \mathrm{Dropout}(W_\text{in} X_i) + P$，
+        其中 $W_\text{in} \in \R^{M \times d}$，
+        $P \in \R^{L \times d}$ 為可學習的位置嵌入（$d=64$）。
+
+  \item \textbf{LSTM 編碼器。}
+        單層 LSTM 處理 $H$，輸出最終隱藏狀態 $h_i \in \R^d$。
+
+  \item \textbf{資產嵌入。}
+        加入可學習的資產嵌入 $e_i \in \R^d$：$h_i \leftarrow h_i + e_i$，
+        使模型能學習資產特定的偏差。
+
+  \item \textbf{跨資產注意力。}
+        所有 $N$ 個隱藏狀態疊加為 $\mathbf{H} \in \R^{N \times d}$，
+        透過多頭自注意力（2 個頭）產生
+        $\mathbf{H}' = \mathrm{LayerNorm}(\mathbf{H} + \mathrm{MHA}(\mathbf{H}))$，
+        使每個資產能夠在同一週內關注所有同類資產。
+
+  \item \textbf{輸出頭。}
+        $s_i = W_\text{out} h'_i \in \R$ 為資產 $i$ 的排序分數。
+\end{enumerate}
+
+\noindent 該模型約有 53K 個參數，與特徵數 $M$ 無關（僅輸入投影層受 $M$ 影響）。
+
+\section{橫截面門控網路（CrossSectionalGatedNet）}
+\label{sec:method:csgated}
+
+橫截面門控網路（CS-Gated）刻意省略時序建模。
+在每一週 $t$，每個資產的特徵向量 $\bx_{i,t}$ 獨立通過
+$L = 3$ 層門控殘差網路（GRN；Lim 等人，2021）：
+\begin{equation}
+  \mathrm{GRN}(\bx) = \mathrm{LayerNorm}\bigl(\bx + \mathrm{GLU}(\mathrm{ELU}(W_1 \bx + b_1) W_2 + b_2)\bigr),
+\end{equation}
+隨後由一個跨資產注意力層使每個資產能夠關注同週的所有其他資產。
+其動機在於，依循 Gu 等人（2020），同期橫截面特徵可能已包含足夠的排序信號。
+
+\section{時序融合轉換器（TFT）}
+\label{sec:method:tft}
+
+TFT 依循 Lim 等人（2021）的設計，採用僅含編碼器的架構，適配橫截面排序任務。
+資產 $i$ 的前向傳播步驟如下：
+
+\begin{enumerate}[nosep]
+  \item \textbf{逐變數嵌入。}
+        $M$ 個輸入特徵各自透過獨立的線性層投影至 $\R^d$，
+        得到 $\mathbf{V}_i \in \R^{L \times M \times d}$，並加入可學習位置嵌入。
+
+  \item \textbf{變數選擇網路（VSN）。}
+        修正後的 VSN 使用共享 GRN（約 27K 參數）對每個變數進行非線性處理，
+        再以資產嵌入 $e_i$ 作為靜態上下文，計算 softmax 選擇權重 $\mathbf{w} \in \Delta^{M-1}$。
+        輸出為 GRN 結果的加權和。此設計比先前的輕量線性 VSN（約 5K 參數）更接近原論文。
+
+  \item \textbf{LSTM 編碼器。}
+        單層 LSTM 從 VSN 選取的特徵中提取時序上下文，後接門控跳接連接與 LayerNorm。
+
+  \item \textbf{可解釋多頭注意力。}
+        TFT 風格的注意力機制（共享 value 投影、頭平均輸出，2 個頭）
+        對 $L$ 個 LSTM 輸出執行注意力計算。
+
+  \item \textbf{跨資產注意力與輸出。}
+        與 LSTM 相同：所有 $N$ 個資產表示通過跨資產自注意力後，由線性評分頭輸出分數。
+\end{enumerate}
+
+\noindent 模型約有 90--100K 個參數，相較標準基準模型的 209--368K 大幅縮減。
+
+\section{梯度累積}
+\label{sec:method:gradacc}
+
+在每個訓練步驟，ListNet 損失在 $N = 86$ 個資產（一週）上計算。
+我們在連續 $K = 4$ 週的梯度上進行累積後再更新參數，
+使有效批次達到 $N \times K = 344$ 個資產-週觀測值。
+這穩定了排名估計：86 個資產的排名百分位解析度約為 $1/85 \approx 0.012$；
+合併 4 週可在不引入前瞻偏差的情況下提升排名多樣性（每週目標獨立計算）。
+
+\section{32 種隨機種子集成}
+\label{sec:method:ensemble}
+
+每個深度學習模型以 32 次獨立的隨機權重初始化進行訓練。
+每個資產的最終排序分數為 32 組預測分數的平均值，投資組合構建基於此均值分數進行。
+
+在本研究的設定中，集成平均對深度學習模型至關重要，因為每個種子的夏普比率變異極大。
+以 LSTM 在「價格+技術指標」特徵組合的表現為例，
+各種子的夏普比率均值為 $+0.70$，標準差為 $0.80$，
+最低達 $-0.78$，最高達 $+2.51$。
+32 個種子集成後的夏普比率為 $+2.46$，是每種子均值的 3.5 倍，
+顯示不同隨機初始化所學習的互補排序模式在平均後噪聲相消、信號疊加。
+最極端的案例是 LSTM 在「+川普+ETF」組合：
+每種子均值僅為 $+0.26$，集成後卻達到 $+2.13$（放大 8.2 倍）。
+此行為符合應用於預測誤差的大數法則，各種子間的誤差具有部分不相關性。
+
+TFT 的集成增益弱於 LSTM，原因在於其較大的容量（約 95K 參數）
+使各種子收斂至更相似的局部極值，降低了噪聲消除所需的預測多樣性。
+
+\section{傳統基準模型}
+\label{sec:method:baselines}
+
+傳統模型僅使用當期特徵向量 $\bx_{i,t}$（無回看窗口），
+與其橫截面公式一致。在每個測試週，預測分數用於分位排序。
+
+\textbf{OLS。}
+將下週報酬對當期特徵做普通最小二乘匯總回歸，在訓練集上估計，無正則化，
+提供線性、完全可解釋的基準。
+
+\textbf{ElasticNet。}
+OLS 加入 L1/L2 混合正則化。
+超參數 $\alpha \in \{0.001, 0.01, 0.1, 1.0\}$ 與
+$\ell_1\text{-ratio} \in \{0.1, 0.5, 0.9, 1.0\}$ 依驗證集夏普比率選定。
+
+\textbf{PCA 回歸。}
+特徵投影至前 $k$ 個主成分（$k \in \{1,2,3,5\}$，依驗證集選定），
+再在縮減空間執行 OLS。
+
+\textbf{PLS。}
+偏最小二乘回歸，找出最大化與報酬目標協方差的潛在方向（$k \in \{1,2,3,5\}$）。
+
+\textbf{隨機森林（RF）。}
+300 棵回歸樹的集成，最大深度 $\in \{1,2,3,5\}$，特徵比例 $\in \{\sqrt{M}, 0.33, 0.5\}$。
+最佳超參數在驗證集上選定，並以 5 個不同 \texttt{random\_state} 訓練後平均預測。
+
+\textbf{梯度提升（GBT）。}
+梯度提升回歸樹，深度 $\in \{1,2\}$，學習率 $\in \{0.01, 0.1\}$，100 或 300 棵樹。
+同樣平均 5 個種子的預測。
+
+線性模型（OLS、ElasticNet、PCA、PLS）為確定性模型，等同於 1 個種子的集成。
+深度學習（32 種子）、樹模型（5 種子）與線性模型（1 種子）之間的不對稱性
+反映了各模型類別的標準部署實踐；第~\ref{sec:analysis:ensemble}~節討論其影響。
+
+\section{評估指標}
+\label{sec:method:eval}
+
+在每個測試週 $t \in \mathcal{T}_{\text{test}}$，
+依預測分數形成做多（頂部十分位）與放空（底部十分位）投資組合。
+投資組合權重採等權（EW）或市值加權（PW）。
+年化夏普比率為
+$\SR = \bar{r}_\text{LS} \sqrt{52} / \hat{\sigma}_\text{LS}$，
+其中 $\bar{r}_\text{LS}$ 與 $\hat{\sigma}_\text{LS}$ 分別為多空週報酬的均值與標準差。
+統計顯著性透過 Newey--West $t$ 統計量（自動選取滯後階數）評估，
+並以定態區塊自助法構建夏普比率的 95\% 信賴區間。

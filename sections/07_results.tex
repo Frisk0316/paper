@@ -1,0 +1,203 @@
+\section{Main Results}
+
+\Cref{tab:cross_model} reports annualized Sharpe ratios for all
+(model, feature configuration) combinations on the held-out test set
+(weeks 275--323, 49 panel weeks; 48 valid portfolio-return observations
+after masking).
+Rows correspond to six information sets of increasing richness;
+columns span three deep learning architectures and six traditional baselines,
+evaluated under both equal-weight (EW) and price-weight (PW) portfolio
+construction schemes.
+
+% Auto-generated table — run: python paper/scripts/gen_tables.py
+\input{tables/table_cross_model}
+
+\paragraph{CrossSectionalGatedNet.}
+CS-Gated achieves the highest single-model Sharpe ratio of 2.75 (EW)
+and 2.61 (PW) under the \texttt{+Onchain} configuration, making it the
+top-performing model when on-chain fundamentals serve as the primary
+feature group.
+The absence of temporal encoding is not a handicap in this regime:
+on-chain metrics such as NVT and MVRV provide strong contemporaneous
+cross-sectional signal—tokens with low NVT relative to their peers are
+arguably undervalued regardless of their prior price trajectory—and
+the GRN layers learn to exploit these levels without needing historical
+context.
+In contrast, CS-Gated does not benefit from adding Trump social media or
+ETF flow features; performance under \texttt{+Trump+ETF} (SR = 1.82 EW)
+falls well below its \texttt{+Onchain} peak and even below LSTM in the
+same configuration.
+This divergence reveals a key architectural limitation: CS-Gated processes
+all features as a single cross-sectional snapshot and cannot distinguish
+between structurally persistent signals (on-chain levels) and
+event-driven, time-varying signals (tweet counts, ETF flow reversals)
+that only carry information in specific weeks.
+Its relative strength is therefore narrow but economically interpretable.
+Among the six information sets, CS-Gated is the only deep learning model
+that clearly dominates both EW and PW in the \texttt{+Onchain} row, and it
+also remains competitive in \texttt{+ETF}, especially under EW.
+However, once the signal requires sequencing rather than level comparison,
+its advantage over both temporal models and Random Forest narrows or
+disappears.
+
+\paragraph{LSTM.}
+LSTM with \texttt{+Trump+ETF} achieves SR = 2.13 (PW) and 2.03 (EW),
+the best configuration among temporal deep learning models.
+The pattern is reversed relative to CS-Gated: LSTM degrades when all
+macro and on-chain features are added together (\texttt{All}, SR = 0.37 EW),
+but recovers strongly when Trump social media and ETF flow series are
+included (+1.54 SR delta over \texttt{All} in EW).
+The interpretation is that the LSTM encoder extracts temporal patterns
+from the social media and ETF time series—such as the sequence of large
+inflow days following an ETF approval event, or the clustering of
+policy-relevant Trump posts before a regulatory announcement—that are
+invisible to a purely cross-sectional architecture operating on
+contemporaneous inputs.
+This complementarity suggests that CS-Gated and LSTM are not competing
+models but rather models specialized for different signal types within
+the same universe.
+The weighting comparison is also informative.
+Under \texttt{Price+Technical}, LSTM reaches SR = 2.45 in PW versus 1.45 in
+EW, the best score in that row under PW.
+This gap suggests that the recurrent momentum signal is strongest among
+larger, more liquid tokens, whereas the equal-weighted universe introduces
+more small-cap noise.
+By contrast, the weak \texttt{All} result shows that temporal depth by
+itself does not solve the problem of mixing predictors with very different
+economic horizons.
+
+\paragraph{Temporal Fusion Transformer.}
+TFT exhibits the weakest baseline performance among deep learning models,
+particularly in the \texttt{Price+Technical} configuration (SR = 0.12 EW,
+0.14 PW), likely because the Variable Selection Network overfits to a small
+feature set during the training phase, producing unstable gate weights
+across seeds.
+However, TFT recovers with the \texttt{+Trump+ETF} configuration
+(SR = 1.76 EW, 1.87 PW), a delta of +1.72 SR over \texttt{All} (EW)
+that mirrors and slightly exceeds the benefit seen in LSTM.
+This parallel improvement confirms that the temporal attention mechanism
+in both LSTM and TFT is capable of extracting policy-linked time-series
+signals; the difference between the two architectures lies in stability
+(LSTM has lower per-seed variance; see \Cref{sec:analysis:ensemble})
+rather than in their capacity to leverage alternative data.
+The corrected full-scale VSN—with $\sim$27K parameters versus the
+lightweight version's $\sim$5K—contributes to this recovery by providing
+richer per-feature gating, consistent with the original
+\citet{lim2021temporal} specification.
+Compared directly with LSTM, TFT is relatively better in the intermediate
+feature sets where selection among heterogeneous inputs matters more than raw
+sequence modeling.
+For example, TFT exceeds LSTM in \texttt{+Onchain} and \texttt{+Trump}
+under both weighting schemes.
+Even so, once the richest event-driven feature set is available
+(\texttt{+Trump+ETF}), LSTM still delivers the stronger headline Sharpe,
+which is consistent with the view that simpler temporal encoders can be more
+stable than heavier attention-based architectures in a short sample.
+
+\paragraph{Traditional baselines.}
+Traditional models are competitive and occasionally dominant.
+Random Forest achieves SR = 2.10 (EW) and 1.57 (PW) under the
+\texttt{All} configuration, outperforming all three deep learning models
+in that row.
+This result reflects RF's ability to exploit feature interactions via
+random splits in high-dimensional feature space without suffering from
+the optimization instability that affects DL models when features with
+heterogeneous predictive horizons are mixed together.
+Gradient Boosting shows more erratic behavior, with SR = $-$0.009 under
+\texttt{All} and \texttt{+ETF} (EW)—possibly indicating overfitting to
+training-set cross-sectional patterns that do not generalize—while
+recovering to SR = 1.15 under \texttt{+Trump+ETF}.
+ElasticNet produces a stable but narrow band of Sharpe ratios
+($\approx$1.0--1.3) across configurations and weighting schemes,
+consistent with the hypothesis that strong L1 regularization concentrates
+the model on a handful of momentum and on-chain signals and effectively
+ignores the remaining features; the repeated values marked $^{*}$ in
+\Cref{tab:cross_model} likely reflect a highly concentrated coefficient
+structure rather than materially different fitted portfolios.
+OLS tracks ElasticNet closely, confirming that linear models without
+sparsity penalties reach similar performance ceilings.
+The latent-factor baselines, PCA and PLS, are weaker overall.
+Their Sharpe ratios remain well below the leading nonlinear models across
+almost every configuration, which suggests that compressing the predictor set
+into a small number of common components removes too much token-specific
+cross-sectional information.
+PLS is occasionally more competitive than PCA under PW, but neither latent
+projection method seriously challenges RF, CS-Gated, or the best LSTM
+specifications.
+
+\paragraph{Weighting schemes.}
+The EW/PW comparison indicates where each model's signal is concentrated.
+CS-Gated is comparatively balanced in the on-chain specification
+(2.75 EW, 2.61 PW), implying that the valuation signal is present across
+the broader cross-section rather than being confined to the largest names.
+LSTM shows the sharpest PW advantage in the price-technical and
+\texttt{+Trump+ETF} settings, which is consistent with temporal patterns
+being easier to exploit in larger, more liquid assets.
+Random Forest, by contrast, loses more of its advantage when moving from EW
+to PW in the richer feature sets, suggesting that part of its strength comes
+from extracting nonlinear interactions among smaller tokens that receive more
+weight in equal-weight portfolios.
+
+\paragraph{Overall comparison and take-aways.}
+Overall, the results reveal a consistent pattern: no single model
+dominates across all feature configurations, and the optimal architecture
+depends critically on which signal type is being exploited.
+CS-Gated dominates when the feature set is limited to contemporaneous
+fundamentals (on-chain levels); LSTM and TFT pull ahead when the
+predictive information is embedded in time-series patterns of social
+media and ETF flows.
+Traditional models—particularly Random Forest—remain formidable
+competitors in high-dimensional feature regimes where regularized
+non-linearity, rather than temporal depth, is the key inductive bias.
+The broader implication is not that deep learning uniformly
+dominates traditional methods, but that objective design and
+architecture-signal alignment determine when deep learning can
+outperform them.
+
+\section{Cumulative Returns}
+
+%insert Figure 1 — combined cumulative returns
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/cum_returns_combined.pdf}
+  \caption{Cumulative long-short returns for the best configuration of
+           each model (CS-Gated \texttt{+Onchain}, LSTM \texttt{+Trump+ETF},
+           TFT \texttt{+Trump+ETF}, and RF \texttt{All}).}
+  \label{fig:cumret_combined}
+\end{figure}
+
+\Cref{fig:cumret_combined} plots the cumulative long-short returns for the
+best configuration of the three deep learning models and the best Random
+Forest specification.
+The figure is broadly consistent with the table-based ranking results:
+the strongest specifications separate from zero over the test period, but
+they do so through different paths.
+CS-Gated and LSTM deliver the strongest final outcomes, whereas RF remains
+competitive but appears more episodic, which is consistent with its
+configuration-specific dominance in \Cref{tab:cross_model} rather than
+uniform superiority across rows.
+
+\section{Decile Sharpe Ratios}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/decile_sharpe_cs_gated.pdf}
+  \caption{Sharpe ratio of each predicted-rank decile portfolio for
+           CS-Gated (\texttt{+Onchain}, EW). Decile 1 corresponds to the
+           short leg (lowest predicted rank); decile 10 corresponds to the
+           long leg (highest predicted rank).}
+  \label{fig:decile_cs_gated}
+\end{figure}
+
+\Cref{fig:decile_cs_gated} shows the Sharpe ratio of each predicted-rank
+decile portfolio for CS-Gated (+Onchain).
+The pattern should be interpreted through the long-short spread rather than
+as a perfectly monotone decile ladder.
+During this test window, several standalone decile portfolios have negative
+Sharpe ratios, but the lowest predicted decile performs materially worse than
+the highest predicted decile.
+The economically relevant result is therefore cross-sectional separation:
+the model identifies assets to avoid more strongly than it produces a smooth
+ranking across every intermediate bucket.
+Middle deciles are noisy, which is unsurprising given only 48 valid weekly
+portfolio observations.

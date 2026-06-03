@@ -1,0 +1,215 @@
+% ============================================================
+%  main.tex  —  English Master Thesis
+%  Department of Finance, College of Management
+%  National Taiwan University
+%  Compile with: xelatex main (run twice for correct TOC/references)
+% ============================================================
+\documentclass[12pt, a4paper, oneside]{book}
+
+% ── Fonts (XeLaTeX required) ──────────────────────────────────
+% English: Times New Roman (if installed); TeX Gyre Termes is the substitute.
+% On Mac/Windows with Times New Roman installed, replace with:
+%   \setmainfont{Times New Roman}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+
+% CJK: 標楷體 (Kai).
+% On Mac/Windows use: \setCJKmainfont{標楷體}
+% On this Linux system AR PL UKai TW is the equivalent.
+\usepackage{xeCJK}
+\setCJKmainfont{AR PL UKai TW}
+\setCJKsansfont{AR PL UKai TW}
+
+% ── Page layout (top 3cm, bottom 2cm, left/right 3cm) ─────────
+\usepackage{geometry}
+\geometry{a4paper, top=3cm, bottom=2cm, left=3cm, right=3cm}
+
+% ── Line spacing: double ──────────────────────────────────────
+\usepackage{setspace}
+\doublespacing
+
+% ── Page numbers at bottom centre ────────────────────────────
+\pagestyle{plain}
+
+% ── NTU logo watermark (top-right every page) ─────────────────
+% ── Shared preamble (tables, math, figures, custom commands) ──
+\input{preamble}
+
+% NTU logo watermark
+\input{watermark}
+
+% ── hyperref settings (loaded in preamble) ───────────────────
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  citecolor  = black,
+  urlcolor   = black,
+}
+
+% ============================================================
+\begin{document}
+
+%% ─────────────────────────────────────────────────────────────
+%% Front matter (Roman page numbers)
+%% ─────────────────────────────────────────────────────────────
+\frontmatter
+
+% ── Cover page ───────────────────────────────────────────────
+\begin{titlepage}
+\begin{singlespace}
+\centering
+\vspace*{1cm}
+
+{\fontsize{18}{27}\selectfont 國立臺灣大學管理學院財務金融研究所\par
+                               碩士論文\par}
+{\fontsize{14}{21}\selectfont Department of Finance\par
+                               College of Management\par}
+{\fontsize{16}{24}\selectfont National Taiwan University\par
+                               Master Thesis\par}
+
+\vfill
+
+{\fontsize{18}{27}\selectfont 利用排序正規化深度學習進行\\
+                               加密貨幣橫截面報酬預測\par}
+\vspace{6pt}
+{\fontsize{18}{27}\selectfont Cross-Sectional Cryptocurrency Return Prediction\\
+                               via Rank-Normalized Deep Learning\par}
+
+\vfill
+
+{\fontsize{18}{27}\selectfont 陳\quad 芃\par
+                               Peng Chen\par}
+
+\vfill
+
+{\fontsize{18}{27}\selectfont 指導教授：蕭湛東 博士\par
+                               Advisor: Dr.\ Lawrence Hsiao\par}
+
+\vfill
+
+{\fontsize{18}{27}\selectfont 中華民國 115 年 6 月\par
+                               June 2026\par}
+
+\vspace{3cm}
+\end{singlespace}
+\end{titlepage}
+
+% ── Committee Approval ───────────────────────────────────────
+\chapter*{Committee Approval}
+\addcontentsline{toc}{chapter}{Committee Approval}
+\thispagestyle{plain}
+
+\vspace{1cm}
+\noindent This thesis entitled \textit{Cross-Sectional Cryptocurrency Return Prediction via
+Rank-Normalized Deep Learning} by Peng Chen (Student ID: R12723071) has been
+examined and approved by the following examination committee on
+\underline{\hspace{3em}} / \underline{\hspace{3em}} / \underline{\hspace{3em}} (YYYY/MM/DD)
+at the Graduate Institute of Finance, National Taiwan University.
+
+\vspace{3cm}
+\noindent Examination Committee:
+
+\vspace{1.5cm}
+\hspace{4cm}\underline{\hspace{8cm}} (Advisor)
+
+\vspace{1.2cm}
+\hspace{4cm}\underline{\hspace{8cm}}
+
+\vspace{1.2cm}
+\hspace{4cm}\underline{\hspace{8cm}}
+
+\vspace{1.2cm}
+\hspace{4cm}\underline{\hspace{8cm}}
+
+\vspace{2cm}
+\noindent Department Chair / Graduate Institute Director\underline{\hspace{5cm}}
+
+% ── Acknowledgments ──────────────────────────────────────────
+\chapter*{Acknowledgments}
+\addcontentsline{toc}{chapter}{Acknowledgments}
+\thispagestyle{plain}
+
+\noindent I am deeply grateful to my advisor, Dr.\ Lawrence Hsiao, for his invaluable
+guidance, insightful suggestions, and continuous encouragement throughout this research.
+
+% ── Chinese Abstract ─────────────────────────────────────────
+\chapter*{中文摘要}
+\addcontentsline{toc}{chapter}{中文摘要}
+\thispagestyle{plain}
+
+\begin{singlespace}
+\input{sections_zh/01_abstract_zh}
+\end{singlespace}
+
+\vspace{1em}
+\noindent\textbf{關鍵詞：}加密貨幣、橫截面預測、排序損失、時序融合轉換器、機器學習
+
+% ── English Abstract ─────────────────────────────────────────
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\thispagestyle{plain}
+
+\input{sections/01_abstract}
+
+\vspace{1em}
+\noindent\textbf{Keywords:} cryptocurrency, cross-sectional prediction, ranking loss,
+temporal fusion transformer, machine learning
+
+% ── Table of Contents, List of Figures, List of Tables ───────
+\tableofcontents
+\listoffigures
+\listoftables
+
+%% ─────────────────────────────────────────────────────────────
+%% Main text (Arabic page numbers)
+%% ─────────────────────────────────────────────────────────────
+\mainmatter
+
+\chapter{Introduction}
+\label{sec:intro}
+\input{sections/02_introduction}
+
+\chapter{Related Work}
+\label{sec:related}
+\input{sections/03_related_work}
+
+\chapter{Data}
+\label{sec:data}
+\input{sections/04_data}
+
+\chapter{Methodology}
+\label{sec:method}
+\input{sections/05_methodology}
+
+\chapter{Empirical Design}
+\label{sec:experiments}
+\input{sections/06_experiments}
+
+\chapter{Results}
+\label{sec:results}
+\input{sections/07_results}
+
+\chapter{Analysis}
+\label{sec:analysis}
+\input{sections/08_analysis}
+
+\chapter{Conclusion}
+\label{sec:conclusion}
+\input{sections/09_conclusion}
+
+%% ─────────────────────────────────────────────────────────────
+%% References
+%% ─────────────────────────────────────────────────────────────
+\cleardoublepage
+\addcontentsline{toc}{chapter}{References}
+\renewcommand{\bibname}{References}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+%% ─────────────────────────────────────────────────────────────
+%% Appendix
+%% ─────────────────────────────────────────────────────────────
+\appendix
+\input{sections/appendix}
+
+\end{document}

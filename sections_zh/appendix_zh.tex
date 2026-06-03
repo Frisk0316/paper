@@ -1,0 +1,93 @@
+% 對應英文：sections/appendix.tex
+% 圖表數字與英文版共用，僅翻譯文字說明
+
+\chapter{完整特徵列表}
+\label{app:features}
+
+原始資料面板保留 53 個特徵欄位；本文六組資訊集實際納入模型者為 42 個，
+各類別說明如下：
+
+\noindent 特徵類別說明：
+\begin{itemize}[nosep]
+  \item \textbf{價格動量}（索引 0--4）：1/4/12/26/52 週報酬，捕捉短中長期動量
+  \item \textbf{技術指標}（索引 5--10）：RSI、布林帶、成交量比率、ATR、OBV、美元交易量
+  \item \textbf{鏈上指標}（索引 11--15）：活躍地址數、交易數、NVT、交易所凈流量、MVRV
+  \item \textbf{總體/情緒}（索引 16--26）：恐懼貪婪指數、標普500、DXY、VIX、黃金、白銀、道瓊
+  \item \textbf{ETF/Polymarket}（索引 27--32）：BTC/ETH ETF 資金流、Polymarket BTC 概率
+  \item \textbf{川普社群媒體}（索引 44--48）：發文數、大寫比例、關稅分數、加密分數、情緒
+  \item \textbf{Farside ETF 細粒度}（索引 49--52）：GBTC/ETHE 個別流量 + 排除後總流量
+\end{itemize}
+
+\chapter{模型參數量}
+\label{app:params}
+
+\begin{table}[h]
+\centering
+\caption{各模型近似參數量（hidden\_dim=64，2 個注意力頭，單層 LSTM）。}
+\label{tab:params_zh}
+\small
+\begin{tabular}{lrr}
+\toprule
+\thead{模型} & \thead{參數量（近似）} & \thead{vs.\ 基準} \\
+\midrule
+CS-Gated（本研究提出） & 49--75K & N/A \\
+LSTM                   & $\sim$53K & $-36\%$（基準：82K） \\
+TFT                    & $\sim$90--100K & $-75\%$（基準：368K） \\
+\midrule
+隨機森林            & N/A（300 棵樹） & --- \\
+梯度提升            & N/A             & --- \\
+OLS                 & $M+1$（線性）   & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{每種子夏普比率統計（完整表）}
+\label{app:seeds}
+
+\begin{table}[h]
+\centering
+\caption{各特徵組合的每種子夏普比率統計（32 個種子，市值加權，測試集）。}
+\label{tab:seeds_zh}
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+\thead{模型} & \thead{特徵組合} & \thead{均值} & \thead{標準差} & \thead{最小值} & \thead{最大值} & \thead{集成 SR} \\
+\midrule
+LSTM & 價格+技術     & +0.70 & 0.80 & $-$0.78 & +2.51 & +2.46 \\
+LSTM & +鏈上         & +0.41 & 0.75 & $-$1.27 & +1.91 & +0.93 \\
+LSTM & 全部          & +0.48 & 0.82 & $-$1.51 & +2.38 & +0.59 \\
+LSTM & +川普         & +0.63 & 0.83 & $-$1.16 & +2.21 & +0.57 \\
+LSTM & +ETF          & +0.46 & 0.99 & $-$1.54 & +2.48 & +0.35 \\
+LSTM & +川普+ETF     & +0.26 & 0.70 & $-$1.49 & +1.84 & +2.13 \\
+\midrule
+TFT  & 價格+技術     & +0.24 & 0.84 & $-$1.11 & +2.18 & +0.19 \\
+TFT  & +鏈上         & +0.51 & 0.71 & $-$1.53 & +1.72 & +1.30 \\
+TFT  & 全部          & +0.51 & 0.83 & $-$1.52 & +1.82 & +0.17 \\
+TFT  & +川普         & +0.47 & 0.85 & $-$1.11 & +2.71 & +0.98 \\
+TFT  & +ETF          & +0.65 & 0.76 & $-$0.73 & +2.07 & +0.87 \\
+TFT  & +川普+ETF     & +0.57 & 0.82 & $-$1.12 & +2.35 & +1.89 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{特徵組合索引範圍}
+\label{app:configs}
+
+\begin{table}[h]
+\centering
+\caption{各資訊集的特徵索引範圍。}
+\label{tab:configs_zh}
+\small
+\begin{tabular}{lrl}
+\toprule
+\thead{特徵組合} & \thead{$M$} & \thead{特徵索引} \\
+\midrule
+價格+技術指標  & 11 & 0--10 \\
++鏈上          & 16 & 0--15 \\
+全部           & 33 & 0--32 \\
++川普          & 38 & 0--32, 44--48 \\
++ETF           & 37 & 0--32, 49--52 \\
++川普+ETF      & 42 & 0--32, 44--48, 49--52 \\
+\bottomrule
+\end{tabular}
+\end{table}

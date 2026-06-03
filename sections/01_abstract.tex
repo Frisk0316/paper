@@ -1,0 +1,25 @@
+Predicting which cryptocurrencies will outperform in the following week
+is fundamentally a cross-sectional ranking task, yet prior work has
+applied time-series loss functions ill-suited to ranking objectives.
+We demonstrate that this mismatch is the primary reason deep learning
+models often underperform ordinary least squares in standard configurations.
+%
+Our key methodological contribution is the use of rank-percentile
+normalized targets with ListNet ranking loss: instead of softmax-weighting
+raw returns, we assign each asset its cross-sectional rank percentile as
+the supervision signal, eliminating scale sensitivity across heterogeneous
+volatility regimes.
+%
+We evaluate three deep learning architectures—LSTM with cross-asset
+attention, a corrected Temporal Fusion Transformer (TFT), and a novel
+CrossSectionalGatedNet (CS-Gated)—against six traditional baselines on
+a panel of 324 weeks $\times$ 86 cryptocurrencies.
+%
+The best model, CS-Gated trained on on-chain features, achieves an
+annualized Sharpe ratio of 2.75 (equal-weight long-short portfolio),
+while LSTM with Trump social media and ETF flow features reaches 2.13.
+The results show that deep learning becomes competitive once the ranking
+objective is specified correctly, although different architectures remain
+best suited to different signal types.
+An ablation study confirms that rank normalization together with gradient
+accumulation, rather than architectural novelty alone, drives the improvement.

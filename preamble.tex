@@ -1,0 +1,83 @@
+% ============================================================
+%  preamble.tex  —  shared by main.tex (English) and main_zh.tex (Chinese)
+% ============================================================
+
+% --- Tables --------------------------------------------------
+\usepackage{booktabs}       % \toprule \midrule \bottomrule
+\usepackage{multirow}       % \multirow{n}{*}{text}
+\usepackage{makecell}       % line breaks inside cells
+\usepackage{tabularx}       % auto-width columns
+
+% --- Figures -------------------------------------------------
+\usepackage{graphicx}
+\usepackage{caption}        % \captionof for non-floating tables
+\usepackage{subcaption}     % \begin{subfigure}
+
+% --- Math ----------------------------------------------------
+\usepackage{amsmath}
+% \usepackage{amssymb}
+\usepackage{bm}             % bold math \bm{}
+
+% --- Numbers & Units -----------------------------------------
+\usepackage{siunitx}
+\usepackage{enumitem}
+\sisetup{
+  round-mode      = places,
+  round-precision = 3,
+  table-format    = 1.3,
+}
+
+% --- Typography ----------------------------------------------
+\usepackage{microtype}      % better line breaking
+
+% --- Diagrams ------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% --- Bibliography --------------------------------------------
+% natbib provides \citet{} and \citep{}
+\usepackage[round,authoryear]{natbib}
+
+% --- Cross-references ----------------------------------------
+\usepackage{hyperref}
+\usepackage{cleveref}       % \cref{} \Cref{}
+
+% --- Fonts ----------------------------------------
+\usepackage{amsfonts}
+
+% ============================================================
+%  Terminology Glossary (EN → ZH)
+%  Cross-Sectional           橫截面
+%  Ranking Loss              排序損失
+%  Gradient Accumulation     梯度累積
+%  Ensemble                  集成
+%  Feature Configuration     特徵組合
+%  Walk-forward              滾動前向
+%  Sharpe Ratio              夏普比率
+%  Long-Short Portfolio      多空投資組合
+%  Variable Selection Net    變數選擇網路
+%  Gated Residual Network    門控殘差網路
+%  Temporal Fusion Transformer  時序融合轉換器
+%  Cross-Asset Attention     跨資產注意力
+% ============================================================
+
+% --- Custom commands -----------------------------------------
+\newcommand{\SR}{\mathrm{SR}}          % Sharpe Ratio abbreviation
+\newcommand{\NW}{\mathrm{NW}}          % Newey–West
+\newcommand{\btau}{\bm{\tau}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\by}{\bm{y}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\R}{\mathbb{R}}
+
+% Bold table header helper
+\renewcommand{\thead}[1]{\textbf{#1}}
+
+% Significance stars
+\newcommand{\sig}[1]{%
+  \ifnum#1=3 $^{***}$\fi
+  \ifnum#1=2 $^{**}$\fi
+  \ifnum#1=1 $^{*}$\fi
+}
+

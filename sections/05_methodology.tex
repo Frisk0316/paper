@@ -1,0 +1,242 @@
+\section{Problem Formulation}
+
+Let $\bx_{i,t} \in \R^M$ denote the feature vector for asset $i$ at week
+$t$, and let $r_{i,t+1}$ denote the realized return over the following
+week.
+Our goal is to learn a scoring function $f_\theta : \R^M \to \R$ such
+that $f_\theta(\bx_{i,t}) > f_\theta(\bx_{j,t})$ whenever
+$r_{i,t+1} > r_{j,t+1}$, for all $(i,j)$ pairs in the cross-section
+at week $t$.
+We then construct a long-short portfolio by going long the top decile
+and short the bottom decile of $f_\theta(\bx_{\cdot,t})$ at each week.
+
+\section{Rank-Normalized ListNet Loss}
+\label{sec:method:loss}
+
+Standard ListNet \citep{cao2007learning} converts scores and targets into
+probability distributions via softmax with temperature $\tau$:
+\begin{equation}
+  P_i = \frac{\exp(s_i / \tau)}{\sum_j \exp(s_j / \tau)}, \quad
+  Q_i = \frac{\exp(y_i / \tau)}{\sum_j \exp(y_j / \tau)},
+  \label{eq:listnet_raw}
+\end{equation}
+where $s_i = f_\theta(\bx_{i,t})$ and $y_i = r_{i,t+1}$.
+The loss is the cross-entropy $\cL = -\sum_i Q_i \log P_i$.
+
+\paragraph{Problem with raw returns.}
+When $y_i = r_{i,t+1}$, the target distribution $Q$ is dominated by a
+few extreme-return assets in volatile weeks, and nearly uniform in calm
+weeks.
+This scale sensitivity destabilizes training across the heterogeneous
+volatility regime of cryptocurrency returns.
+
+\paragraph{Rank-percentile normalization.}
+Following \citet{poh2021building}, we replace raw returns with
+cross-sectional rank percentiles:
+\begin{equation}
+  \tilde{y}_{i,t} = \frac{\mathrm{rank}(r_{i,t+1};\, \{r_{j,t+1}\}_{j=1}^N) - 1}{N - 1}
+  \in [0, 1],
+  \label{eq:rank_norm}
+\end{equation}
+so the top-performing asset always receives $\tilde{y} = 1$ and the
+worst-performing always receives $\tilde{y} = 0$, regardless of the
+magnitude of the week's returns.
+We substitute $\tilde{y}_{i,t}$ for $y_i$ in \cref{eq:listnet_raw}.
+This ensures every asset contributes equally to the target distribution
+and the loss gradient is invariant to cross-sectional volatility scaling.
+
+\section{LSTM Architecture}
+\label{sec:method:lstm}
+
+The LSTM model encodes the $L$-step feature history for each asset
+before performing cross-asset comparison.
+Given the feature sequence $X_i = (\bx_{i,t-L+1}, \dots, \bx_{i,t}) \in \R^{L \times M}$,
+the forward pass is:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Input projection and position encoding.}
+        $H = \mathrm{Dropout}(W_\text{in} X_i) + P$,
+        where $W_\text{in} \in \R^{M \times d}$ and
+        $P \in \R^{L \times d}$ is a learnable positional embedding ($d=64$).
+
+  \item \textbf{LSTM encoder.}
+        A single-layer LSTM processes $H$ to produce the final hidden
+        state $h_i \in \R^d$.
+
+  \item \textbf{Asset embedding.}
+        A learnable asset embedding $e_i \in \R^d$ is added:
+        $h_i \leftarrow h_i + e_i$.
+        This allows the model to learn asset-specific biases.
+
+  \item \textbf{Cross-asset attention.}
+        All $N$ hidden states are stacked into
+        $\mathbf{H} = [h_1, \dots, h_N]^\top \in \R^{N \times d}$.
+        Multi-head self-attention (2 heads) produces
+        $\mathbf{H}' = \mathrm{LayerNorm}(\mathbf{H} + \mathrm{MHA}(\mathbf{H}))$,
+        enabling each asset to attend to all peers in the same week.
+
+  \item \textbf{Output head.}
+        $s_i = W_\text{out} h'_i \in \R$ is the ranking score for asset $i$.
+\end{enumerate}
+
+\noindent The model has approximately 53K parameters regardless of $M$,
+as the number of features affects only the input projection layer.
+
+\section{CrossSectionalGatedNet}
+\label{sec:method:csgated}
+
+The CrossSectionalGatedNet (CS-Gated) deliberately omits temporal
+modeling.
+At each week $t$, each asset's feature vector $\bx_{i,t}$ is processed
+independently through a stack of $L = 3$ Gated Residual Network (GRN)
+layers \citep{lim2021temporal}:
+\begin{equation}
+  \mathrm{GRN}(\bx) = \mathrm{LayerNorm}\bigl(\bx + \mathrm{GLU}(\mathrm{ELU}(W_1 \bx + b_1) W_2 + b_2)\bigr),
+\end{equation}
+followed by a cross-asset attention layer that allows each asset to
+attend to all other assets in the same week.
+The motivation is that, following \citet{gu2020empirical}, the cross-section
+of contemporaneous features may already encode sufficient signal for ranking.
+
+\section{Temporal Fusion Transformer}
+\label{sec:method:tft}
+
+The TFT follows \citet{lim2021temporal} with an encoder-only design
+adapted for cross-sectional ranking.
+The forward pass for asset $i$ proceeds as follows:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Per-variable embedding.}
+        Each of the $M$ input features is independently projected to
+        $\R^d$ via a learned linear layer, yielding
+        $\mathbf{V}_i \in \R^{L \times M \times d}$.
+        A learnable positional embedding is added.
+
+  \item \textbf{Variable Selection Network (VSN).}
+        The corrected VSN processes each variable through a shared GRN
+        (approximately 27K parameters), then computes softmax selection
+        weights $\mathbf{w} \in \Delta^{M-1}$ conditioned on the asset
+        embedding $e_i$ as static context.
+        The selected representation is the weighted sum of GRN outputs.
+        This design follows \citet{lim2021temporal} more closely than
+        the commonly used lightweight linear VSN ($\approx$5K parameters).
+
+  \item \textbf{LSTM encoder.}
+        A single-layer LSTM produces temporal context from the
+        VSN-selected features.
+        A gated skip connection and LayerNorm are applied.
+
+  \item \textbf{Interpretable multi-head attention.}
+        TFT-style attention with a shared value projection and
+        head-averaged outputs (2 heads) attends over the $L$
+        LSTM outputs.
+
+  \item \textbf{Cross-asset attention and output.}
+        Identical to the LSTM: all $N$ asset representations are passed
+        through cross-asset self-attention before a linear scoring head.
+\end{enumerate}
+
+\noindent The model has approximately 90--100K parameters, reduced from
+209--368K in unconstrained TFT configurations through capacity regularization.
+
+\section{Gradient Accumulation}
+\label{sec:method:gradacc}
+
+At each training step, the ListNet loss is computed over $N = 86$ assets
+(one week).
+We accumulate gradients over $K = 4$ consecutive weeks before updating
+parameters, yielding an effective batch of $N \times K = 344$ asset-week
+observations per update.
+This stabilizes the rank estimate in \cref{eq:rank_norm}: with 86 assets,
+the rank percentile has resolution $1/85 \approx 0.012$; pooling 4 weeks
+improves rank diversity without introducing look-ahead bias (each week's
+targets are computed independently).
+
+\section{32-Seed Ensemble}
+\label{sec:method:ensemble}
+
+Each deep learning model is trained 32 times with independent random
+weight initializations.
+The final ranking score for each asset is the mean of the 32 predicted
+scores, and portfolio construction proceeds on this mean score.
+
+Ensemble averaging is critical for deep learning models in this setting
+because per-seed Sharpe ratios are highly variable.
+For LSTM on the \texttt{Price+Technical} configuration, individual seeds
+produce Sharpe ratios with mean $+0.70$ and standard deviation $0.80$,
+with a minimum of $-0.78$ and maximum of $+2.51$.
+The 32-seed ensemble Sharpe ratio is $+2.46$—3.5$\times$ the per-seed
+mean—demonstrating that diverse random initializations learn
+complementary ranking patterns whose noise cancels in the average.
+The most extreme case is LSTM on \texttt{+Trump+ETF}: the per-seed mean
+is only $+0.26$, yet the ensemble achieves $+2.13$ (8.2$\times$
+amplification).
+This behavior conforms to the law of large numbers applied to the
+prediction errors, which are partially uncorrelated across seeds.
+
+TFT exhibits weaker ensemble gain because its larger capacity ($\approx$95K
+parameters) causes seeds to converge to more similar local minima,
+reducing the prediction diversity needed for noise cancellation.
+
+\section{Traditional Baselines}
+\label{sec:method:baselines}
+
+Traditional models use only the current-period feature vector $\bx_{i,t}$
+(no lookback window), consistent with their cross-sectional formulation.
+At each test week, predicted scores are used for decile sorting.
+
+\textbf{OLS.}
+A pooled ordinary least-squares regression of next-week return on current
+features, estimated on the training set.
+No regularization; provides a linear, fully-interpretable baseline.
+
+\textbf{ElasticNet.}
+OLS with combined L1/L2 regularization.
+Hyperparameters $\alpha \in \{0.001, 0.01, 0.1, 1.0\}$ and
+$\ell_1\text{-ratio} \in \{0.1, 0.5, 0.9, 1.0\}$ are selected by
+validation Sharpe ratio.
+
+\textbf{PCA Regression.}
+Features are projected onto their top $k$ principal components
+($k \in \{1, 2, 3, 5\}$, chosen on validation), then OLS is applied
+in the reduced space.
+
+\textbf{PLS.}
+Partial least-squares regression, which finds latent directions that
+maximize covariance with the return target
+($k \in \{1, 2, 3, 5\}$ components, chosen on validation).
+
+\textbf{Random Forest (RF).}
+An ensemble of 300 regression trees with maximum depth $\in \{1,2,3,5\}$
+and feature fraction $\in \{\sqrt{M}, 0.33, 0.5\}$.
+Best hyperparameters are selected on the validation set.
+Five independent forests (different \texttt{random\_state}) are trained
+and their predictions averaged.
+
+\textbf{Gradient Boosting (GBT).}
+Gradient-boosted regression trees with depth $\in \{1, 2\}$,
+learning rate $\in \{0.01, 0.1\}$, and 100 or 300 estimators.
+As with RF, predictions are averaged over 5 seeds.
+
+Linear models (OLS, ElasticNet, PCA, PLS) are deterministic given their
+hyperparameters and are equivalent to a 1-seed ensemble.
+The asymmetry between DL (32 seeds), tree models (5 seeds), and linear
+models (1 seed) reflects standard deployment practice for each class;
+Section~\ref{sec:analysis:ensemble} discusses its implications.
+
+\section{Evaluation Metrics}
+\label{sec:method:eval}
+
+At each test week $t \in \mathcal{T}_{\text{test}}$, we form a long
+(top decile) and short (bottom decile) portfolio based on predicted scores.
+Portfolio weights are either equal-weight (EW) or price-weight (PW).
+The annualized Sharpe ratio is
+$\SR = \bar{r}_\text{LS} \sqrt{52} / \hat{\sigma}_\text{LS}$,
+where $\bar{r}_\text{LS}$ and $\hat{\sigma}_\text{LS}$ are the mean and
+standard deviation of weekly long-short returns.
+Statistical significance is assessed via Newey--West $t$-statistics
+\citep{newey1987simple} with automatic lag selection \citep{newey1994automatic},
+and 95\% Sharpe-ratio confidence intervals are obtained by circular block
+bootstrap \citep{politis1994stationary}.
+The bootstrap block length is $b=\max(2,\lfloor T^{1/3}\rfloor)$, where
+$T$ is the number of valid weekly portfolio-return observations.

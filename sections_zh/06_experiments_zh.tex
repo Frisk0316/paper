@@ -1,0 +1,74 @@
+% 對應英文：sections/06_experiments.tex
+
+\section{超參數}
+
+表~\ref{tab:hyperparams} 列出深度學習模型共用的主要訓練超參數。
+這些設定直接來自實驗設定檔 \texttt{config.json}，
+目的在於讓 LSTM、CS-Gated 與 TFT 在可比較的條件下接受訓練，
+避免因批次大小、正則化強度或回看窗口不同而混淆模型差異。
+
+\begin{table}[t]
+\centering
+\caption{深度學習模型共用之訓練超參數。}
+\label{tab:hyperparams}
+\small
+\begin{tabular}{ll}
+\toprule
+\thead{參數} & \thead{設定值} \\
+\midrule
+回看窗口 $L$              & 8 週 \\
+隱藏維度                  & 64 \\
+注意力頭數                & 2 \\
+LSTM 層數                 & 1 \\
+CS-Gated GRN 層數         & 3 \\
+Dropout                   & 0.30 \\
+學習率                    & 0.001（Adam） \\
+權重衰減                  & $10^{-4}$ \\
+批次大小                  & 128 sequences \\
+梯度累積步數              & 4 \\
+有效橫截面批次            & $86 \times 4 = 344$ 資產 \\
+ListNet 溫度 $\tau$       & 1.0 \\
+Warmup epochs             & 10 \\
+最大訓練回合              & 150 \\
+Early stopping patience   & 20 \\
+深度學習集成種子數        & 32 \\
+\midrule
+Train / Valid / Test      & 70\% / 15\% / 15\% \\
+測試集長度                & 49 週 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{特徵組合}
+
+本文評估六種資訊集，豐富度依序遞增：
+
+\begin{enumerate}
+  \item \textbf{價格+技術指標}（11 個特徵）：僅包含動量與技術指標。
+  \item \textbf{+鏈上}（16 個）：在價格與技術指標上加入鏈上變數。
+  \item \textbf{全部}（33 個）：納入所有基礎市場、總體、ETF 與 Polymarket 特徵。
+  \item \textbf{+川普}（38 個）：在「全部」基礎上加入 5 個川普社群媒體特徵。
+  \item \textbf{+ETF}（37 個）：在「全部」基礎上加入 4 個 Farside ETF 細粒度特徵。
+  \item \textbf{+川普+ETF}（42 個）：同時納入川普社群媒體與 Farside ETF 特徵。
+\end{enumerate}
+
+此設計讓我們能夠區分三件事：
+第一，鏈上基本面是否已足以支撐高品質排序；
+第二，政策相關社群媒體訊號能否提供額外資訊；
+第三，ETF 結構性資金流是否更適合由具時序記憶的模型來吸收。
+換言之，六組資訊集不只是「資料越多越好」的堆疊，
+而是用來檢驗不同資料型態與模型架構之間的互補關係。
+
+\section{集成策略}
+
+對每一組（模型、特徵組合），深度學習模型皆以不同隨機種子獨立訓練 32 次。
+最終排序分數為 32 組預測的平均值，再據以建構多空投資組合。
+採用集成的理由並非單純追求更高績效，
+而是因為單一深度學習種子的樣本外夏普比率變異相當大，
+若只報告一次訓練結果，容易將偶然的初始化好壞誤判為模型能力差異。
+
+傳統樹模型則以不同隨機狀態重複估計後再平均預測，
+線性模型（OLS、ElasticNet、PCA、PLS）為確定性模型。
+這種集成上的不對稱性雖然反映了各模型家族的典型部署方式，
+但也意味著跨模型比較時，應同時關注「最佳集成後績效」與「單次訓練穩定性」兩個面向。
+第~\ref{sec:analysis:ensemble}~節將進一步討論此一問題。

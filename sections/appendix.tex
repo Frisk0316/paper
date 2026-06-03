@@ -1,0 +1,144 @@
+% ============================================================
+%  Appendix
+% ============================================================
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Complete Feature List}
+\label{app:features}
+
+Table~\ref{tab:feature_list} lists the 42 features that are actually used in
+the six information sets reported in the main text.
+
+\begin{table}[hp]
+\centering
+\small
+\caption{Complete feature list used in the empirical model comparisons,
+         with indices, names, and categories.
+         $^\dagger$ Newly introduced structural features.}
+\label{tab:feature_list}
+\begin{tabular}{clll}
+\toprule
+\thead{Idx} & \thead{Name} & \thead{Category} & \thead{Description} \\
+\midrule
+0--4   & r1w, r4w, r12w, r26w, r52w & Price Momentum & 1/4/12/26/52-week returns \\
+5      & rsi\_14             & Technical       & RSI (14-period) \\
+6      & bb\_pct             & Technical       & Bollinger Band \% \\
+7      & vol\_ratio          & Technical       & Volume ratio (7-day / 30-day) \\
+8      & atr\_pct            & Technical       & ATR as \% of price \\
+9      & obv\_change         & Technical       & On-Balance Volume change \\
+10     & vol\_usd            & Technical       & USD trading volume \\
+11     & active\_addr        & On-chain        & Active addresses \\
+12     & tx\_count           & On-chain        & Transaction count \\
+13     & nvt                 & On-chain        & Network Value to Transactions \\
+14     & exchange\_net\_flow & On-chain        & Exchange net flow \\
+15     & mvrv                & On-chain        & Market Value / Realized Value \\
+16     & fear\_greed         & Macro/Sentiment & Crypto Fear \& Greed Index \\
+17     & spx\_ret            & Macro           & S\&P 500 weekly return \\
+18     & dxy\_ret            & Macro           & DXY (USD Index) return \\
+19     & vix                 & Macro           & VIX volatility index \\
+20     & gold\_ret           & Macro           & Gold return \\
+21     & silver\_ret         & Macro           & Silver return \\
+22     & dji\_ret            & Macro           & Dow Jones return \\
+23     & spx\_vol\_chg       & Macro           & S\&P 500 vol change \\
+24     & gold\_vol\_chg      & Macro           & Gold vol change \\
+25     & silver\_vol\_chg    & Macro           & Silver vol change \\
+26     & dji\_vol\_chg       & Macro           & DJI vol change \\
+27     & btc\_etf\_inflow\_norm  & ETF/Prediction & BTC ETF inflow (normalized) \\
+28     & polymarket\_btc         & ETF/Prediction & Prediction-market BTC probability \\
+29     & btc\_etf\_inflow\_raw   & ETF/Prediction & BTC ETF inflow (raw) \\
+30     & eth\_etf\_inflow\_norm  & ETF/Prediction & ETH ETF inflow (normalized) \\
+31     & eth\_etf\_inflow\_raw   & ETF/Prediction & ETH ETF inflow (raw) \\
+32     & btc\_etf\_vol           & ETF/Prediction & BTC ETF volume \\
+44     & trump\_post\_count      & Trump Social   & Weekly post count \\
+45     & trump\_caps\_ratio      & Trump Social   & Caps ratio (intensity) \\
+46     & trump\_tariff\_score    & Trump Social   & Tariff/trade post fraction \\
+47     & trump\_crypto\_score    & Trump Social   & Crypto post fraction \\
+48     & trump\_sentiment        & Trump Social   & Exclamation density \\
+49$^\dagger$ & btc\_etf\_gbtc       & Farside ETF & GBTC weekly net flow (\$M) \\
+50$^\dagger$ & btc\_etf\_excl\_gbtc & Farside ETF & BTC ETF ex-GBTC net flow \\
+51$^\dagger$ & eth\_etf\_ethe       & Farside ETF & ETHE weekly net flow (\$M) \\
+52$^\dagger$ & eth\_etf\_excl\_ethe & Farside ETF & ETH ETF ex-ETHE net flow \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Model Parameter Counts}
+\label{app:params}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Approximate parameter counts per model
+         (hidden\_dim=64, 2 heads, 1 LSTM layer).
+         Parameter count varies with $M$ only in the input projection layer.}
+\label{tab:params}
+\begin{tabular}{lrr}
+\toprule
+\thead{Model} & \thead{Params (approx.)} & \thead{vs.\ Baseline} \\
+\midrule
+CS-Gated (Proposed) & 49--75K        & N/A \\
+LSTM                & $\sim$53K      & $-36\%$ (Baseline: 82K) \\
+TFT                 & $\sim$90--100K & $-75\%$ (Baseline: 368K) \\
+\midrule
+Random Forest     & N/A (300 trees) & --- \\
+Gradient Boosting & N/A             & --- \\
+OLS               & $M+1$ (linear)  & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Per-Seed SR Statistics (Full Table)}
+\label{app:seeds}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Per-seed Sharpe ratio statistics across all feature configurations
+         (32 seeds, price-weighted long-short, test set).
+         Ensemble SR = mean prediction over 32 seeds.}
+\label{tab:seeds_full}
+\begin{tabular}{llrrrrr}
+\toprule
+\thead{Model} & \thead{Config} & \thead{Mean} & \thead{Std} & \thead{Min} & \thead{Max} & \thead{Ensemble} \\
+\midrule
+LSTM & Price+Technical & $+$0.70 & 0.80 & $-$0.78 & $+$2.51 & $+$2.46 \\
+LSTM & +Onchain        & $+$0.41 & 0.75 & $-$1.27 & $+$1.91 & $+$0.93 \\
+LSTM & All             & $+$0.48 & 0.82 & $-$1.51 & $+$2.38 & $+$0.59 \\
+LSTM & +Trump          & $+$0.63 & 0.83 & $-$1.16 & $+$2.21 & $+$0.57 \\
+LSTM & +ETF            & $+$0.46 & 0.99 & $-$1.54 & $+$2.48 & $+$0.35 \\
+LSTM & +Trump+ETF      & $+$0.26 & 0.70 & $-$1.49 & $+$1.84 & $+$2.13 \\
+\midrule
+TFT  & Price+Technical & $+$0.24 & 0.84 & $-$1.11 & $+$2.18 & $+$0.19 \\
+TFT  & +Onchain        & $+$0.51 & 0.71 & $-$1.53 & $+$1.72 & $+$1.30 \\
+TFT  & All             & $+$0.51 & 0.83 & $-$1.52 & $+$1.82 & $+$0.17 \\
+TFT  & +Trump          & $+$0.47 & 0.85 & $-$1.11 & $+$2.71 & $+$0.98 \\
+TFT  & +ETF            & $+$0.65 & 0.76 & $-$0.73 & $+$2.07 & $+$0.87 \\
+TFT  & +Trump+ETF      & $+$0.57 & 0.82 & $-$1.12 & $+$2.35 & $+$1.89 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Feature Configuration Sizes}
+\label{app:configs}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Feature index ranges for each information set.}
+\label{tab:configs}
+\begin{tabular}{lrl}
+\toprule
+\thead{Configuration} & \thead{$M$} & \thead{Feature Indices} \\
+\midrule
+Price+Technical & 11 & 0--10 \\
++Onchain        & 16 & 0--15 \\
+All             & 33 & 0--32 \\
++Trump          & 38 & 0--32, 44--48 \\
++ETF            & 37 & 0--32, 49--52 \\
++Trump+ETF      & 42 & 0--32, 44--48, 49--52 \\
+\bottomrule
+\end{tabular}
+\end{table}

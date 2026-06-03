@@ -1,0 +1,90 @@
+\section{Hyperparameters}
+
+\Cref{tab:hyperparams} reports the main training hyperparameters shared by the
+deep learning models.
+The empirical design holds these settings fixed across LSTM, CS-Gated, and
+TFT wherever possible so that performance differences can be interpreted as
+differences in objective function and architecture rather than differences in
+training budget.
+The choices are intentionally conservative for a 324-week panel: the hidden
+dimension is kept moderate, dropout and weight decay are non-trivial, and
+early stopping is based on validation performance rather than test-period
+feedback.
+
+\begin{table}[t]
+\centering
+\caption{Training hyperparameters.}
+\label{tab:hyperparams}
+\small
+\begin{tabular}{ll}
+\toprule
+\thead{Parameter} & \thead{Value} \\
+\midrule
+Lookback window $L$         & 8 weeks \\
+Hidden dimension            & 64 \\
+Attention heads             & 2 \\
+LSTM layers                 & 1 \\
+CS-Gated layers             & 3 \\
+Dropout                     & 0.30 \\
+Learning rate               & 0.001 (Adam) \\
+Weight decay                & $10^{-4}$ \\
+Batch size                  & 128 sequences \\
+Grad.\ accumulation steps   & 4 \\
+Effective batch (assets)    & $86 \times 4 = 344$ \\
+ListNet temperature $\tau$  & 1.0 \\
+Warmup epochs               & 10 \\
+Epochs (max)                & 150 \\
+Early stopping patience     & 20 \\
+Number of DL seeds          & 32 \\
+\midrule
+Train / Valid / Test split  & 70\% / 15\% / 15\% \\
+Test weeks                  & 49 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Information Sets}
+
+We evaluate six information sets of increasing richness:
+
+\begin{enumerate}
+  \item \textbf{Price+Technical} (11 features): momentum and technical indicators only.
+  \item \textbf{+Onchain} (16): adds on-chain metrics.
+  \item \textbf{All} (33): all baseline market, macro, ETF, and prediction-market features.
+  \item \textbf{+Trump} (38): \texttt{All} plus 5 Trump social media features.
+  \item \textbf{+ETF} (37): \texttt{All} plus 4 granular Farside ETF features.
+  \item \textbf{+Trump+ETF} (42): \texttt{All} plus both Trump and Farside ETF features.
+\end{enumerate}
+
+This design is therefore not intended as a simple ``more features is better''
+progression.
+Instead, it is structured to identify which types of information are most
+usefully handled by which types of models.
+The \texttt{+Onchain} configuration tests whether contemporaneous
+fundamentals already contain enough information for cross-sectional ranking,
+whereas \texttt{+Trump} and \texttt{+ETF} isolate two forms of
+alternative data with more explicit temporal structure.
+
+\section{Ensemble Strategy}
+
+For each (model, feature-configuration) pair, we train 32 independent deep
+learning runs with different random seeds and average their predicted rank
+scores before portfolio construction.
+The purpose of ensembling here is not only to improve headline performance,
+but also to stabilize a training problem in which single-seed results can
+vary substantially.
+The averaging is performed at the score level, before assets are sorted into
+deciles.
+No seed is selected or discarded using test-set returns; each of the 32
+trained networks contributes equally to the final ranking score.
+This matters because the investment object is an ordering, not a calibrated
+return forecast: averaging scores preserves the ordinal information learned
+by different initializations while reducing idiosyncratic seed-level noise.
+
+Traditional tree models are also averaged across random states, while linear
+models are deterministic.
+This asymmetry reflects typical deployment practice for each model family,
+but it also means that model comparisons should be interpreted along two
+dimensions: best achievable ensemble performance, and the stability of an
+individual training run.
+We return to this distinction in \Cref{sec:analysis:ensemble}.

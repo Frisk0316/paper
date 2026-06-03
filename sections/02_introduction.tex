@@ -1,0 +1,119 @@
+The cryptocurrency market has grown from a single asset—Bitcoin, introduced by
+\citet{nakamoto2008bitcoin} as a decentralized peer-to-peer payment system—into
+a diverse asset class encompassing thousands of tokens with heterogeneous
+on-chain economics, governance structures, and macro exposures.
+\citet{liu2022cryptocurrency} document that the cross-section of cryptocurrency
+returns exhibits its own set of risk factors, including momentum and size premia
+that are structurally distinct from their equity counterparts.
+With over 86 actively traded tokens spanning divergent network fundamentals
+and social sentiment signals, predicting which assets will outperform their peers
+in the following week is a natural cross-sectional learning problem—one that
+demands models capable of synthesizing heterogeneous feature sets while learning
+a \emph{relative}, rather than absolute, notion of return.
+
+\paragraph{Prior work and the research gap.}
+The foundational study of \citet{gu2020empirical} demonstrates that machine
+learning models—in particular, tree ensembles and deep networks—substantially
+outperform linear baselines for cross-sectional equity return prediction when
+feature sets are rich and model capacity is appropriately regularized.
+\citet{freyberger2020dissecting} extend this finding to a nonparametric
+setting, showing that nonlinear interactions among stock characteristics carry
+significant incremental predictive power.
+Applying these insights to cryptocurrency markets is appealing in principle
+but nontrivial in practice.
+The primary obstacle is \emph{cross-sectional volatility heterogeneity}: a
+Bitcoin weekly return might span $\pm 5\%$ while a small-cap altcoin regularly
+moves $\pm 30\%$.
+When the standard ListNet loss \citep{cao2007learning} is trained with raw
+weekly returns as softmax targets, the resulting target distribution $Q$ is
+dominated in volatile weeks by a handful of extreme-return assets, and nearly
+uniform in calm weeks.
+This instability produces high-variance gradient estimates that undermine
+consistent ranking performance across market regimes.
+\citet{poh2021building} identify this failure mode in equity cross-sectional
+strategies and propose replacing raw-return targets with cross-sectional rank
+percentiles; we adopt and extend their framework to the cryptocurrency setting,
+where the problem is more acute due to the larger cross-sectional dispersion
+in volatility.
+
+On the data side, \citet{liu2022cryptocurrency} and \citet{cong2021tokenomics}
+establish that on-chain network metrics—such as network value-to-transaction
+ratio (NVT) and market-value-to-realized-value (MVRV)—contain information
+about the fundamental valuation state of individual tokens that is orthogonal
+to price-based momentum signals.
+Beyond on-chain data, the role of alternative information sources in asset
+pricing has been well established in the equity literature.
+\citet{tetlock2007giving} demonstrates that media pessimism predicts short-run
+downward price pressure in equity markets, and \citet{bollen2011twitter}
+show that Twitter-derived mood measures Granger-cause changes in the Dow Jones
+Industrial Average.
+We extend this line of inquiry to a novel source: the social media activity of
+a single, highly influential policy actor (the 45th and 47th U.S.\ President),
+whose public communications on cryptocurrency regulation and macroeconomic
+tariff policy have preceded market-wide repricing events.
+A further structural data source—unavailable before January 2024—is the
+granular daily flow data for spot Bitcoin and Ethereum exchange-traded funds
+published by Farside Investors
+\citep{bitcoin_etf_farside,ethereum_etf_farside}, which permits decomposition of ETF
+inflows into net new capital and legacy-holder rotations.
+To the best of our knowledge, this paper is the first to integrate on-chain fundamentals,
+policy-linked social media signals, and ETF structural flows into a unified
+cross-sectional ranking framework evaluated on a live 86-token universe.
+
+\paragraph{Architecture considerations.}
+Two families of temporal deep learning architectures are well suited to
+sequential financial data.
+The Long Short-Term Memory network \citep{hochreiter1997long} encodes the
+$L$-step feature history into a fixed-size hidden state via gated recurrence,
+and has remained a competitive baseline for financial time series despite the
+rise of attention-based models.
+The Temporal Fusion Transformer \citep{lim2021temporal} combines interpretable
+Variable Selection Networks (VSN) with multi-head self-attention
+\citep{vaswani2017attention}, enabling explicit feature selection at each
+time step and scalable handling of heterogeneous input types.
+However, \citet{gu2020empirical} also observe that cross-sectional features
+can dominate temporal features for equity ranking—motivating a purely
+cross-sectional architecture that operates on contemporaneous inputs alone,
+without any temporal encoder.
+We formalize and test this design hypothesis through our CrossSectionalGatedNet.
+
+\paragraph{Contributions.}
+Building on the above foundation, this paper makes four targeted contributions
+to the cross-sectional cryptocurrency prediction literature:
+\begin{enumerate}
+  \item \textbf{Rank-normalized ListNet targets.}
+        Following \citet{poh2021building}, we replace raw returns with
+        cross-sectional rank percentiles $\in [0,1]$ as softmax targets,
+        ensuring equal contribution of each asset regardless of its
+        absolute volatility and stabilizing the cross-entropy gradient
+        across heterogeneous market regimes.
+  \item \textbf{Gradient accumulation.}
+        The effective cross-sectional batch size is increased from 86
+        (one week's cross-section) to $86 \times 4 = 344$ assets per
+        gradient step, providing a more stable rank estimate for the
+        ListNet loss and reducing stochasticity in the gradient direction.
+  \item \textbf{CrossSectionalGatedNet.}
+        A new architecture consisting purely of Gated Residual Networks
+        (GRN) and cross-asset attention, with no temporal encoder.
+        Motivated by \citet{gu2020empirical}, we test whether the
+        cross-sectional structure alone—without temporal modeling—is
+        sufficient for the ranking task when on-chain fundamentals
+        dominate the predictive signal.
+  \item \textbf{Corrected TFT Variable Selection Network.}
+        We replace the standard lightweight VSN ($\sim$5K parameters) with
+        a per-variable shared GRN ($\sim$27K parameters), closer to the
+        original \citet{lim2021temporal} specification, and show that
+        this correction substantially stabilizes feature selection.
+\end{enumerate}
+
+\paragraph{Paper organization.}
+\Cref{sec:related} reviews related work in greater detail.
+\Cref{sec:data} describes the 86-token, 324-week balanced panel and its
+seven feature groups.
+\Cref{sec:method} formalizes the ranking loss and the four model architectures.
+\Cref{sec:experiments} details the training setup, six feature configurations,
+and 32-seed ensemble strategy.
+\Cref{sec:results} presents the main cross-model comparison.
+\Cref{sec:analysis} provides ablation studies, Granger causality tests,
+transaction cost sensitivity analysis, and sub-period robustness checks.
+\Cref{sec:conclusion} concludes.

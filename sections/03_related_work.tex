@@ -1,0 +1,116 @@
+\section{Machine Learning for Cross-Sectional Returns}
+
+\citet{gu2020empirical} provide the canonical empirical benchmark for
+machine-learning-based cross-sectional asset pricing.
+Using a large equity-characteristic panel, they show that tree ensembles
+and neural networks outperform linear baselines when feature sets are rich
+and model capacity is regularized appropriately.
+\citet{freyberger2020dissecting} reinforce this conclusion from a
+nonparametric perspective, demonstrating that the incremental predictive
+power of asset characteristics often lies in nonlinear interactions rather
+than in any single characteristic taken in isolation.
+Viewed jointly, this literature suggests that the central modeling problem
+in cross-sectional return prediction is not merely temporal extrapolation,
+but the extraction of structured relative information from a heterogeneous
+feature set.
+
+The cryptocurrency literature confirms that the asset class is predictable,
+but it is less settled on how much model complexity is actually useful.
+\citet{liu2022cryptocurrency} establish the basic risk-factor structure of
+cryptocurrency returns, documenting momentum and size premia that resemble
+equity analogues only superficially.
+More directly related to our setting, \citet{cakici2022crypto_ml} show that
+machine-learning models can generate economically meaningful gains in the
+cross-section of cryptocurrency returns, although the incremental benefit of
+very high model complexity is limited.
+\citet{filippou2024crypto_ml} reach a complementary conclusion: with a rich
+set of network, momentum, technical, and attention variables, nonlinear
+methods deliver substantial out-of-sample predictive and economic value.
+These studies jointly suggest that the key question is not whether
+cryptocurrency returns are predictable, but how the learning problem should
+be formulated so that heterogeneous predictors can be turned into a stable
+cross-sectional ranking.
+
+\section{Learning to Rank in Finance}
+
+The learning-to-rank literature \citep{cao2007learning} offers a natural
+foundation for long-short portfolio formation because the investment problem
+is inherently ordinal: the objective is to place assets in the correct
+relative order, not necessarily to forecast their exact subsequent return.
+\citet{poh2021building} provide the closest precursor to our approach.
+They show that standard ListNet training becomes unstable when raw returns
+are used directly as softmax targets, because target sharpness varies across
+weeks with the cross-sectional dispersion of returns.
+Replacing raw-return targets with cross-sectional rank percentiles produces
+substantially more stable long-short performance in equities.
+
+Our contribution builds directly on this insight, but in a setting where the
+problem is arguably more severe.
+Cross-sectional volatility heterogeneity is considerably larger in
+cryptocurrency markets than in equities, so any objective that depends on
+raw-return scale is more prone to unstable gradients.
+We therefore adopt the rank-percentile ListNet target and complement it with
+gradient accumulation, treating stable objective design as a first-order
+methodological requirement rather than a minor training detail.
+
+\section{Temporal Deep Learning Architectures}
+
+Long Short-Term Memory networks \citep{hochreiter1997long,fischer2018lstm_finance}
+remain a strong baseline for financial sequence modeling because they can
+extract local temporal dependence with relatively controlled parameter count.
+This is especially relevant when predictors exhibit short-lived persistence,
+as in event-driven social media activity or ETF flow sequences.
+
+The Temporal Fusion Transformer \citep{lim2021temporal} extends this design
+space by combining recurrent encoding, Variable Selection Networks (VSN),
+and attention-based temporal aggregation.
+Relative to generic Transformer architectures \citep{vaswani2017attention},
+TFT is particularly attractive for financial panels with heterogeneous
+predictors because it provides an explicit mechanism for feature selection
+and interpretability.
+At the same time, its larger capacity also makes it more vulnerable to
+training instability when the effective sample size is limited.
+This trade-off is one motivation for our side-by-side comparison of LSTM,
+TFT, and a purely cross-sectional architecture.
+
+\section{Alternative Data Sources}
+
+The use of alternative data in financial prediction is now well established.
+\citet{tetlock2007giving} show that media tone predicts short-horizon stock
+returns, while \citet{bollen2011twitter} document predictive content in
+Twitter-derived mood measures.
+In the cryptocurrency setting, \citet{maitre2025social} provide more direct
+evidence that social-media-based attention is related to the cross-section of
+crypto returns.
+These studies collectively motivate the use of text-derived or attention-like
+signals as complements to price and fundamental information.
+
+Our Trump social media variables differ from general sentiment proxies in an
+important respect: they are designed to capture policy-linked signals from a
+single high-impact political actor rather than diffuse market mood.
+This makes them structurally closer to event variables than to broad
+attention measures.
+
+ETF flow data provides a second form of alternative information that is
+distinct from both prices and on-chain activity.
+Since the approval of spot Bitcoin ETFs in January 2024, the daily flow data
+published by Farside Investors
+\citep{bitcoin_etf_farside,ethereum_etf_farside} has made it possible to separate
+legacy-holder rotations out of Grayscale products from genuinely new capital
+entering the asset class.
+That decomposition is economically meaningful because it distinguishes
+supply-side pressure from demand-side expansion, and is therefore a
+potentially useful predictor of cross-sectional dispersion even if it is not
+always informative about market direction.
+
+\section{Statistical Inference}
+
+Evaluating financial machine-learning strategies requires inference tools
+that remain valid under serial dependence and non-normal return
+distributions.
+We therefore use Newey--West heteroskedasticity and autocorrelation
+consistent statistics \citep{newey1987simple,newey1994automatic} and the
+stationary bootstrap of \citet{politis1994stationary}.
+These methods do not improve predictive performance, but they reduce the
+risk of mistaking concentrated short-sample performance for robust evidence,
+which is particularly important given the 49-week test window in this study.

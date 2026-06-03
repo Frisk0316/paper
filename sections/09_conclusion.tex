@@ -1,0 +1,55 @@
+This paper argues that the central reason deep learning often underperforms in
+cross-sectional cryptocurrency prediction is not necessarily architectural
+inadequacy, but objective misspecification.
+When the task is fundamentally about relative ordering, training on raw-return
+targets makes the loss overly sensitive to week-to-week variation in return
+scale.
+Replacing those targets with rank percentiles, and pairing that change with
+gradient accumulation, makes the ranking problem substantially more stable and
+translates that stability into out-of-sample performance.
+
+\paragraph{Architecture and signal type.}
+The main empirical conclusion is not that one architecture dominates
+universally, but that different architectures are well suited to different
+signal structures.
+CS-Gated performs best when predictive content comes from contemporaneous
+on-chain fundamentals, implying that strong cross-sectional structure can be
+exploited without explicit temporal encoding.
+LSTM and TFT improve materially once Trump social media and granular ETF flow
+variables are added, suggesting that temporal architectures are most valuable
+when the predictors themselves possess persistence, event clustering, or
+sequence-level information.
+At the same time, Random Forest remains a powerful benchmark in richer
+high-dimensional settings, underscoring that traditional nonlinear methods are
+still highly competitive.
+
+\paragraph{Methodological implication.}
+The ablation evidence shows that the decisive improvement comes less from a
+novel network design than from correcting the supervision signal and making it
+trainable.
+This has a broader implication for financial machine learning:
+reported failures of deep learning may sometimes reflect the fact that models
+were optimized against targets misaligned with the actual investment
+criterion, rather than the fact that neural architectures are intrinsically
+ill-suited to the domain.
+
+\paragraph{Limitations.}
+Three limitations remain central.
+First, the test period covers only 49 weeks, which constrains statistical
+precision.
+Second, the 86-asset universe is fixed using March 2026 rankings and therefore
+contains survivorship bias.
+Third, the strongest deep-learning results rely on multi-seed ensembling, so
+their advantage over simpler methods is not the same as single-run
+repeatability or computational efficiency.
+
+\paragraph{Future work.}
+Several extensions follow naturally from the present results.
+The rank-normalized objective could be tested on equity or other
+cross-sectional asset universes to assess external validity.
+Higher-frequency order-book, microstructure, or narrative-text signals could
+be used to identify more precisely which predictors genuinely require temporal
+encoding.
+Finally, portfolio construction could be extended beyond decile long-short
+sorting toward constrained optimization or dynamic position sizing, bringing
+the predictive and execution layers of the framework into tighter alignment.

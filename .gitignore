@@ -1,0 +1,51 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+*.xdy
+*.idx
+*.ilg
+*.ind
+*.loa
+*.lol
+*.nav
+*.snm
+*.vrb
+
+# LaTeX temporary files
+*.bak
+*.tmp
+*.synctex
+*.synctex(busy)
+
+# Generated thesis PDFs at the paper root.
+# Figure PDFs and NTU_logo_gray.pdf remain trackable.
+/main.pdf
+/main_zh.pdf
+/Cross-Sectional Cryptocurrency Return Prediction via Rank-Normalized Deep Learning
+/Cross-Sectional Cryptocurrency Return Prediction via Rank-Normalized Deep Learning v2.pdf
+
+# Python helper caches
+__pycache__/
+*.py[cod]
+
+# Local/editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Codex/local scratch files
+.codex
+.codex_tmp*/
