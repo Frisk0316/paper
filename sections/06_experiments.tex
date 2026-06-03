@@ -35,7 +35,8 @@ ListNet temperature $\tau$  & 1.0 \\
 Warmup epochs               & 10 \\
 Epochs (max)                & 150 \\
 Early stopping patience     & 20 \\
-Number of DL seeds          & 32 \\
+Number of deep-model seeds  & 32 \\
+Number of tree-model seeds  & 32 \\
 \midrule
 Train / Valid / Test split  & 70\% / 15\% / 15\% \\
 Test weeks                  & 49 \\
@@ -81,8 +82,8 @@ This matters because the investment object is an ordering, not a calibrated
 return forecast: averaging scores preserves the ordinal information learned
 by different initializations while reducing idiosyncratic seed-level noise.
 
-Traditional tree models are also averaged across random states, while linear
-models are deterministic.
+Traditional tree models are also averaged across 32 random states, while
+linear models are deterministic.
 This asymmetry reflects typical deployment practice for each model family,
 but it also means that model comparisons should be interpreted along two
 dimensions: best achievable ensemble performance, and the stability of an

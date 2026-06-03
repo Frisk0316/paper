@@ -107,15 +107,13 @@ Gradient Boosting shows more erratic behavior, with SR = $-$0.009 under
 \texttt{All} and \texttt{+ETF} (EW)—possibly indicating overfitting to
 training-set cross-sectional patterns that do not generalize—while
 recovering to SR = 1.15 under \texttt{+Trump+ETF}.
-ElasticNet produces a stable but narrow band of Sharpe ratios
-($\approx$1.0--1.3) across configurations and weighting schemes,
-consistent with the hypothesis that strong L1 regularization concentrates
-the model on a handful of momentum and on-chain signals and effectively
-ignores the remaining features; the repeated values marked $^{*}$ in
-\Cref{tab:cross_model} likely reflect a highly concentrated coefficient
-structure rather than materially different fitted portfolios.
-OLS tracks ElasticNet closely, confirming that linear models without
-sparsity penalties reach similar performance ceilings.
+ElasticNet is much less stable in this version of the v6 results.
+Its Sharpe ratio is negative in several non-Trump configurations and turns
+positive only when the Trump feature group is included, suggesting that the
+penalty path is selecting a narrow and fragile subset of predictors rather
+than a broadly reliable linear signal.
+OLS is more consistently positive, but its performance ceiling remains below
+the leading nonlinear models.
 The latent-factor baselines, PCA and PLS, are weaker overall.
 Their Sharpe ratios remain well below the leading nonlinear models across
 almost every configuration, which suggests that compressing the predictor set
@@ -172,20 +170,23 @@ Forest specification.
 The figure is broadly consistent with the table-based ranking results:
 the strongest specifications separate from zero over the test period, but
 they do so through different paths.
-CS-Gated and LSTM deliver the strongest final outcomes, whereas RF remains
-competitive but appears more episodic, which is consistent with its
-configuration-specific dominance in \Cref{tab:cross_model} rather than
-uniform superiority across rows.
+RF reaches the largest cumulative level in this figure, especially under
+price weighting, but its gains are more episodic and concentrated early in
+the test window.
+CS-Gated and LSTM accumulate more gradually.
+This is consistent with RF's configuration-specific dominance in
+\Cref{tab:cross_model} rather than uniform superiority across rows.
 
 \section{Decile Sharpe Ratios}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/decile_sharpe_cs_gated.pdf}
-  \caption{Sharpe ratio of each predicted-rank decile portfolio for
-           CS-Gated (\texttt{+Onchain}, EW). Decile 1 corresponds to the
+  \caption[Decile Sharpe ratios for CS-Gated]{Sharpe ratio of each predicted-rank decile portfolio for
+           CS-Gated (\texttt{+Onchain}). Decile 1 corresponds to the
            short leg (lowest predicted rank); decile 10 corresponds to the
-           long leg (highest predicted rank).}
+           long leg (highest predicted rank). Bars report both PW and EW
+           portfolios.}
   \label{fig:decile_cs_gated}
 \end{figure}
 

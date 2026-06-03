@@ -156,8 +156,10 @@ def gen_cross_model():
         r'masking, portfolio metrics use 48 valid weekly long-short returns.}'
     )
     lines.append(r'\label{tab:cross_model}')
-    lines.append(r'\small')
-    lines.append(r'\begin{tabular}{' + col_spec + '}')
+    lines.append(r'\begingroup')
+    lines.append(r'\footnotesize')
+    lines.append(r'\setlength{\tabcolsep}{3pt}')
+    lines.append(r'\begin{tabular}{@{}' + col_spec + r'@{}}')
     lines.append(r'\toprule')
 
     header = r'\thead{Information Set}'
@@ -189,6 +191,7 @@ def gen_cross_model():
 
     lines.append(r'\bottomrule')
     lines.append(r'\end{tabular}')
+    lines.append(r'\endgroup')
     lines.append(r'\par\vspace{0.35em}')
     lines.append(r'\begin{minipage}{0.96\linewidth}')
     lines.append(r'\raggedright\footnotesize')
@@ -294,12 +297,13 @@ def gen_txcost():
     lines.append(r'\begin{table}[t]')
     lines.append(r'\centering')
     lines.append(
-        r'\caption{Transaction-cost sensitivity for the CS-Gated '
-        r'\texttt{+Onchain} equal-weight long-short strategy.}'
+        r'\caption[Transaction-cost sensitivity]{Transaction-cost sensitivity '
+        r'for the CS-Gated \texttt{+Onchain} equal-weight long-short strategy.}'
     )
     lines.append(r'\label{tab:txcost}')
     lines.append(r'\small')
-    lines.append(r'\begin{tabular}{lrrrl}')
+    lines.append(r'\setlength{\tabcolsep}{4pt}')
+    lines.append(r'\begin{tabularx}{\linewidth}{@{}lrrr>{\raggedright\arraybackslash}X@{}}')
     lines.append(r'\toprule')
     lines.append(
         r'\thead{Scenario} & \thead{Cost} & \thead{Net SR} & '
@@ -313,7 +317,7 @@ def gen_txcost():
             f'{avg_to * 100:.1f}\\% & {desc} \\\\'
         )
     lines.append(r'\bottomrule')
-    lines.append(r'\end{tabular}')
+    lines.append(r'\end{tabularx}')
     lines.append(r'\par\vspace{0.35em}')
     lines.append(r'\begin{minipage}{0.96\linewidth}')
     lines.append(r'\raggedright\footnotesize')

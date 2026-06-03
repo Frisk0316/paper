@@ -3,8 +3,10 @@
 \centering
 \caption{Cross-model comparison: annualised Sharpe ratios on the test set. The held-out period contains 49 panel weeks; after masking, portfolio metrics use 48 valid weekly long-short returns.}
 \label{tab:cross_model}
-\small
-\begin{tabular}{lrrrrrrrrr}
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
 \thead{Information Set} & \thead{CS\_Gated} & \thead{LSTM} & \thead{TFT} & \thead{OLS} & \thead{ElasticNet} & \thead{PCA} & \thead{PLS} & \thead{RF} & \thead{GBT} \\
 \midrule
@@ -27,6 +29,7 @@ All & 1.252 & 0.591 & 0.165 & 1.244 & -0.778 & 0.564 & 0.725 & \textbf{1.572$^\d
 {+}Trump{+}ETF & 1.613 & \textbf{2.135$^\dagger$} & 1.869$^\dagger$ & 1.203 & 1.029 & 0.410 & 0.815 & 1.711$^\dagger$ & 1.788 \\
 \bottomrule
 \end{tabular}
+\endgroup
 \par\vspace{0.35em}
 \begin{minipage}{0.96\linewidth}
 \raggedright\footnotesize

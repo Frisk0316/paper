@@ -192,9 +192,13 @@ No regularization; provides a linear, fully-interpretable baseline.
 
 \textbf{ElasticNet.}
 OLS with combined L1/L2 regularization.
-Hyperparameters $\alpha \in \{0.001, 0.01, 0.1, 1.0\}$ and
-$\ell_1\text{-ratio} \in \{0.1, 0.5, 0.9, 1.0\}$ are selected by
-validation Sharpe ratio.
+The candidate grid is
+\[
+\alpha \in \{0.001, 0.01, 0.1, 1.0\}, \qquad
+\ell_1\text{-ratio} \in \{0.1, 0.5, 0.9, 1.0\}.
+\]
+Selection is based on validation Sharpe ratio, so regularization is tied to
+the portfolio-ranking objective rather than in-sample prediction error alone.
 
 \textbf{PCA Regression.}
 Features are projected onto their top $k$ principal components
@@ -210,17 +214,17 @@ maximize covariance with the return target
 An ensemble of 300 regression trees with maximum depth $\in \{1,2,3,5\}$
 and feature fraction $\in \{\sqrt{M}, 0.33, 0.5\}$.
 Best hyperparameters are selected on the validation set.
-Five independent forests (different \texttt{random\_state}) are trained
+Thirty-two independent forests (different \texttt{random\_state}) are trained
 and their predictions averaged.
 
 \textbf{Gradient Boosting (GBT).}
 Gradient-boosted regression trees with depth $\in \{1, 2\}$,
 learning rate $\in \{0.01, 0.1\}$, and 100 or 300 estimators.
-As with RF, predictions are averaged over 5 seeds.
+As with RF, predictions are averaged over 32 seeds.
 
 Linear models (OLS, ElasticNet, PCA, PLS) are deterministic given their
 hyperparameters and are equivalent to a 1-seed ensemble.
-The asymmetry between DL (32 seeds), tree models (5 seeds), and linear
+The asymmetry between DL (32 seeds), tree models (32 seeds), and linear
 models (1 seed) reflects standard deployment practice for each class;
 Section~\ref{sec:analysis:ensemble} discusses its implications.
 
