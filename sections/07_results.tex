@@ -161,7 +161,10 @@ outperform them.
   \includegraphics[width=\linewidth]{figures/cum_returns_combined.pdf}
   \caption{Cumulative long-short returns for the best configuration of
            each model (CS-Gated \texttt{+Onchain}, LSTM \texttt{+Trump+ETF},
-           TFT \texttt{+Trump+ETF}, and RF \texttt{All}).}
+           TFT \texttt{+Trump+ETF}, and RF \texttt{All}). Legend entries report
+           each strategy's terminal cumulative return (CR), i.e.\ the final
+           value of the plotted curve; this is a magnitude measure, not the
+           risk-adjusted Sharpe ratio of \Cref{fig:sr_combined}.}
   \label{fig:cumret_combined}
 \end{figure}
 
@@ -177,6 +180,28 @@ the test window.
 CS-Gated and LSTM accumulate more gradually.
 This is consistent with RF's configuration-specific dominance in
 \Cref{tab:cross_model} rather than uniform superiority across rows.
+
+%insert Figure — Sharpe ratio comparison
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/sr_comparison.pdf}
+  \caption{Annualized long-short Sharpe ratios for the best configuration of
+           each model (CS-Gated \texttt{+Onchain}, LSTM \texttt{+Trump+ETF},
+           TFT \texttt{+Trump+ETF}, and RF \texttt{All}), under price-weighted
+           and equal-weighted portfolio construction. Unlike
+           \Cref{fig:cumret_combined}, which plots terminal cumulative return,
+           this figure reports risk-adjusted performance.}
+  \label{fig:sr_combined}
+\end{figure}
+
+\Cref{fig:sr_combined} restates the same comparison on a risk-adjusted basis.
+CS-Gated (\texttt{+Onchain}) attains the highest Sharpe ratio under both
+weighting schemes (2.61 PW, 2.75 EW), whereas Random Forest---despite reaching
+the largest cumulative return in \Cref{fig:cumret_combined}---earns the lowest
+price-weighted Sharpe ratio (1.57), because its gains are large but volatile.
+The two figures therefore measure different objects: cumulative return rewards
+total magnitude, while the Sharpe ratio rewards consistency, and it is the
+latter that underpins the model ranking in \Cref{tab:cross_model}.
 
 \section{Decile Sharpe Ratios}
 

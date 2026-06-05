@@ -76,7 +76,10 @@ RF 仍是不可忽視的強勁對手。
   \caption{各模型最佳設定的多空累積報酬曲線：
            CS-Gated（\texttt{+鏈上}）、LSTM（\texttt{+川普+ETF}）、
            TFT（\texttt{+川普+ETF}）與 RF（\texttt{全部}），
-           並以等權市場投資組合作為對照。}
+           並以等權市場投資組合作為對照。
+           圖例中的 CR（cumulative return）為各策略的期末累積報酬，
+           即曲線終點值，屬報酬「規模」指標，
+           並非圖~\ref{fig:sr_combined_zh} 的風險調整夏普比率。}
   \label{fig:cumret_combined_zh}
 \end{figure}
 
@@ -89,6 +92,24 @@ RF 仍是不可忽視的強勁對手。
 後者則更像是對政策與資金流事件的時序回應。
 RF 雖在部分資訊集上具競爭力，
 其累積報酬斜率相對較不穩定，與其在不同資訊集間表現起伏較大的現象一致。
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/sr_comparison.pdf}
+  \caption{各模型最佳設定的多空年化夏普比率：
+           CS-Gated（\texttt{+鏈上}）、LSTM（\texttt{+川普+ETF}）、
+           TFT（\texttt{+川普+ETF}）與 RF（\texttt{全部}），
+           分別以價格加權與等權建構。與圖~\ref{fig:cumret_combined_zh}
+           所繪的期末累積報酬不同，本圖呈現的是風險調整後的績效。}
+  \label{fig:sr_combined_zh}
+\end{figure}
+
+圖~\ref{fig:sr_combined_zh} 以風險調整角度重述同一組比較。
+CS-Gated（\texttt{+鏈上}）在兩種加權方式下皆取得最高夏普比率（價格加權 2.61、等權 2.75）；
+反觀 RF 雖在圖~\ref{fig:cumret_combined_zh} 中累積報酬最高，
+其價格加權夏普比率卻最低（1.57），原因在於其報酬幅度大但波動亦大。
+兩張圖衡量的對象不同：累積報酬獎勵的是總幅度，
+夏普比率獎勵的是穩定性，而表~\ref{tab:cross_model} 的模型排序正是依據後者。
 
 \section{分位夏普比率}
 

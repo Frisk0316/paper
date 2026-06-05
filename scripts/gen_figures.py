@@ -174,10 +174,10 @@ def fig2_combined_cumulative():
         cum_pw = np.cumsum(m['weekly_pw'])
         cum_ew = np.cumsum(m['weekly_ew'])
         axes[0].plot(range(len(cum_pw)), cum_pw,
-                     label=f"{label} SR={m['sr_pw']:.2f}",
+                     label=f"{label} CR={cum_pw[-1]:.2f}",
                      color=color, lw=1.2)
         axes[1].plot(range(len(cum_ew)), cum_ew,
-                     label=f"{label} SR={m['sr_ew']:.2f}",
+                     label=f"{label} CR={cum_ew[-1]:.2f}",
                      color=color, lw=1.2)
 
     # Add zero line
@@ -271,10 +271,48 @@ def fig4_feat_importance():
     print(f"  Saved: {path}")
 
 
+def fig5_sr_comparison():
+    """Annualised Sharpe ratio of the best config per model (PW and EW)."""
+    sr_pw, sr_ew, labels = [], [], []
+    for model in MODELS:
+        all_metrics, _, _ = load_model(model)
+        if all_metrics is None:
+            continue
+        best = BEST_CONFIG[model]
+        m = all_metrics[best]
+        sr_pw.append(m['sr_pw'])
+        sr_ew.append(m['sr_ew'])
+        labels.append(f'{MODEL_LABELS[model]}\n({best})')
+
+    x = np.arange(len(labels))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(5, 3.6))
+    ax.bar(x - w/2, sr_pw, w, label='Price-Weighted', color='steelblue')
+    ax.bar(x + w/2, sr_ew, w, label='Equal-Weighted', color='coral')
+    for xi, v in zip(x - w/2, sr_pw):
+        ax.text(xi, v + 0.03, f'{v:.2f}', ha='center', va='bottom', fontsize=6)
+    for xi, v in zip(x + w/2, sr_ew):
+        ax.text(xi, v + 0.03, f'{v:.2f}', ha='center', va='bottom', fontsize=6)
+    ax.set_ylim(0, max(sr_pw + sr_ew) * 1.18)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=7)
+    ax.axhline(0, color='grey', ls='--', lw=0.5)
+    ax.set_ylabel('Annualised Sharpe Ratio')
+    ax.set_title('Best Model Comparison: Long-Short Sharpe Ratio')
+    ax.legend(fontsize=7)
+
+    plt.tight_layout()
+    path = os.path.join(FIG_DIR, 'sr_comparison.pdf')
+    save_figure(path)
+    plt.close()
+    print(f"  Saved: {path}")
+
+
 if __name__ == '__main__':
     print("=== Generating publication figures ===")
     fig1_per_model_cumulative()
     fig2_combined_cumulative()
     fig3_decile_sharpe()
     fig4_feat_importance()
+    fig5_sr_comparison()
     print("=== Done ===")
