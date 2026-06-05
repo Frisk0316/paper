@@ -234,11 +234,11 @@ def gen_ablation():
     lines.append(r'\begin{table}[t]')
     lines.append(r'\centering')
     lines.append(
-        r'\caption{Ablation study of the LSTM pipeline on '
+        r'\caption{Ablation study of the LSTM specification on '
         r'\texttt{Price+Technical} (32 seeds per variant). Ensemble SR is '
         r'computed after averaging predictions across all seeds; Mean Seed SR '
         r'and Seed SD summarize single-seed performance. $\Delta$ is the '
-        r'change in Ensemble SR from the previous variant.}'
+        r'change in Ensemble SR from the preceding specification.}'
     )
     lines.append(r'\label{tab:ablation}')
     lines.append(r'\small')

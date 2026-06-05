@@ -11,15 +11,15 @@ the supervision signal, eliminating scale sensitivity across heterogeneous
 volatility regimes.
 %
 We evaluate three deep learning architectures—LSTM with cross-asset
-attention, a corrected Temporal Fusion Transformer (TFT), and a novel
+attention, a full-scale Temporal Fusion Transformer (TFT), and a novel
 CrossSectionalGatedNet (CS-Gated)—against six traditional baselines on
 a panel of 324 weeks $\times$ 86 cryptocurrencies.
 %
 The best model, CS-Gated trained on on-chain features, achieves an
 annualized Sharpe ratio of 2.75 (equal-weight long-short portfolio),
 while LSTM with Trump social media and ETF flow features reaches 2.13.
-The results show that deep learning becomes competitive once the ranking
-objective is specified correctly, although different architectures remain
-best suited to different signal types.
+The results show that deep learning becomes competitive when the ranking
+objective is aligned with the cross-sectional task, although different
+architectures remain best suited to different signal types.
 An ablation study confirms that rank normalization together with gradient
 accumulation, rather than architectural novelty alone, drives the improvement.

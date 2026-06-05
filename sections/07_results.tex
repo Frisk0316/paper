@@ -80,10 +80,9 @@ in both LSTM and TFT is capable of extracting policy-linked time-series
 signals; the difference between the two architectures lies in stability
 (LSTM has lower per-seed variance; see \Cref{sec:analysis:ensemble})
 rather than in their capacity to leverage alternative data.
-The corrected full-scale VSN—with $\sim$27K parameters versus the
-lightweight version's $\sim$5K—contributes to this recovery by providing
-richer per-feature gating, consistent with the original
-\citet{lim2021temporal} specification.
+The full-scale VSN, with $\sim$27K parameters, contributes to this recovery
+by providing richer nonlinear per-feature gating, consistent with the
+original \citet{lim2021temporal} specification.
 Compared directly with LSTM, TFT is relatively better in the intermediate
 feature sets where selection among heterogeneous inputs matters more than raw
 sequence modeling.
@@ -107,8 +106,8 @@ Gradient Boosting shows more erratic behavior, with SR = $-$0.009 under
 \texttt{All} and \texttt{+ETF} (EW)—possibly indicating overfitting to
 training-set cross-sectional patterns that do not generalize—while
 recovering to SR = 1.15 under \texttt{+Trump+ETF}.
-ElasticNet produces a nearly feature-invariant result in this version of the
-v6 results.
+ElasticNet produces a nearly feature-invariant result across the tested
+information sets.
 Its Sharpe ratio is almost constant across the non-Trump configurations
 (about 1.28 under both weighting schemes) and shifts only marginally once the
 Trump feature group is included, suggesting that the cross-validated penalty

@@ -37,10 +37,12 @@ update is based on a richer cross-sectional empirical distribution.
 The methodological lesson is straightforward.
 The key improvement is not a single architectural tweak, but the combination
 of target redesign and training stabilization:
-rank normalization fixes what the model is asked to learn, and gradient
-accumulation makes that objective learnable in practice.
-The corrected TFT Variable Selection Network is not part of this table,
-because it is architecture-specific rather than a shared pipeline change.
+rank normalization aligns the learning target with the cross-sectional
+ranking objective, and gradient accumulation makes that objective learnable
+in practice.
+The full-scale TFT Variable Selection Network is not part of this table,
+because it is architecture-specific rather than a shared methodological
+component.
 
 \section{Granger Causality of Trump Features}
 \label{sec:analysis:granger}

@@ -113,13 +113,14 @@ The forward pass for asset $i$ proceeds as follows:
         A learnable positional embedding is added.
 
   \item \textbf{Variable Selection Network (VSN).}
-        The corrected VSN processes each variable through a shared GRN
+        The full-scale VSN processes each variable through a shared GRN
         (approximately 27K parameters), then computes softmax selection
         weights $\mathbf{w} \in \Delta^{M-1}$ conditioned on the asset
         embedding $e_i$ as static context.
         The selected representation is the weighted sum of GRN outputs.
-        This design follows \citet{lim2021temporal} more closely than
-        the commonly used lightweight linear VSN ($\approx$5K parameters).
+        This design follows \citet{lim2021temporal}'s nonlinear variable
+        selection mechanism rather than a lightweight linear VSN
+        ($\approx$5K parameters).
 
   \item \textbf{LSTM encoder.}
         A single-layer LSTM produces temporal context from the
