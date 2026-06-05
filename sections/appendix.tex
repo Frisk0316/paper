@@ -96,26 +96,26 @@ OLS               & $M+1$ (linear)  & --- \\
 \centering
 \small
 \caption{Per-seed Sharpe ratio statistics across all feature configurations
-         (32 seeds, price-weighted long-short, test set).
+         (32 seeds, equal-weight long-short, test set).
          Ensemble SR = mean prediction over 32 seeds.}
 \label{tab:seeds_full}
 \begin{tabular}{llrrrrr}
 \toprule
 \thead{Model} & \thead{Config} & \thead{Mean} & \thead{Std} & \thead{Min} & \thead{Max} & \thead{Ensemble} \\
 \midrule
-LSTM & Price+Technical & $+$0.70 & 0.80 & $-$0.78 & $+$2.51 & $+$2.46 \\
-LSTM & +Onchain        & $+$0.41 & 0.75 & $-$1.27 & $+$1.91 & $+$0.93 \\
-LSTM & All             & $+$0.48 & 0.82 & $-$1.51 & $+$2.38 & $+$0.59 \\
-LSTM & +Trump          & $+$0.63 & 0.83 & $-$1.16 & $+$2.21 & $+$0.57 \\
-LSTM & +ETF            & $+$0.46 & 0.99 & $-$1.54 & $+$2.48 & $+$0.35 \\
-LSTM & +Trump+ETF      & $+$0.26 & 0.70 & $-$1.49 & $+$1.84 & $+$2.13 \\
+LSTM & Price+Technical & $+$0.70 & 0.80 & $-$0.77 & $+$2.51 & $+$1.45 \\
+LSTM & +Onchain        & $+$0.41 & 0.75 & $-$1.27 & $+$1.91 & $+$1.13 \\
+LSTM & All             & $+$0.48 & 0.81 & $-$1.51 & $+$2.38 & $+$0.37 \\
+LSTM & +Trump          & $+$0.63 & 0.83 & $-$1.16 & $+$2.21 & $+$0.59 \\
+LSTM & +ETF            & $+$0.44 & 0.99 & $-$1.54 & $+$2.48 & $+$0.57 \\
+LSTM & +Trump+ETF      & $+$0.26 & 0.70 & $-$1.49 & $+$1.84 & $+$2.03 \\
 \midrule
-TFT  & Price+Technical & $+$0.24 & 0.84 & $-$1.11 & $+$2.18 & $+$0.19 \\
-TFT  & +Onchain        & $+$0.51 & 0.71 & $-$1.53 & $+$1.72 & $+$1.30 \\
-TFT  & All             & $+$0.51 & 0.83 & $-$1.52 & $+$1.82 & $+$0.17 \\
-TFT  & +Trump          & $+$0.47 & 0.85 & $-$1.11 & $+$2.71 & $+$0.98 \\
-TFT  & +ETF            & $+$0.65 & 0.76 & $-$0.73 & $+$2.07 & $+$0.87 \\
-TFT  & +Trump+ETF      & $+$0.57 & 0.82 & $-$1.12 & $+$2.35 & $+$1.89 \\
+TFT  & Price+Technical & $+$0.22 & 0.83 & $-$1.11 & $+$2.18 & $+$0.12 \\
+TFT  & +Onchain        & $+$0.49 & 0.71 & $-$1.53 & $+$1.74 & $+$1.32 \\
+TFT  & All             & $+$0.51 & 0.83 & $-$1.52 & $+$1.82 & $+$0.44 \\
+TFT  & +Trump          & $+$0.47 & 0.85 & $-$1.11 & $+$2.71 & $+$0.93 \\
+TFT  & +ETF            & $+$0.65 & 0.75 & $-$0.73 & $+$2.07 & $+$0.88 \\
+TFT  & +Trump+ETF      & $+$0.58 & 0.82 & $-$1.12 & $+$2.35 & $+$1.76 \\
 \bottomrule
 \end{tabular}
 \end{table}

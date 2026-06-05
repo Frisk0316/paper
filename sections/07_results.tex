@@ -107,11 +107,13 @@ Gradient Boosting shows more erratic behavior, with SR = $-$0.009 under
 \texttt{All} and \texttt{+ETF} (EW)—possibly indicating overfitting to
 training-set cross-sectional patterns that do not generalize—while
 recovering to SR = 1.15 under \texttt{+Trump+ETF}.
-ElasticNet is much less stable in this version of the v6 results.
-Its Sharpe ratio is negative in several non-Trump configurations and turns
-positive only when the Trump feature group is included, suggesting that the
-penalty path is selecting a narrow and fragile subset of predictors rather
-than a broadly reliable linear signal.
+ElasticNet produces a nearly feature-invariant result in this version of the
+v6 results.
+Its Sharpe ratio is almost constant across the non-Trump configurations
+(about 1.28 under both weighting schemes) and shifts only marginally once the
+Trump feature group is included, suggesting that the cross-validated penalty
+path collapses onto a narrow, stable subset of predictors and does not exploit
+the additional information in the richer feature sets.
 OLS is more consistently positive, but its performance ceiling remains below
 the leading nonlinear models.
 The latent-factor baselines, PCA and PLS, are weaker overall.

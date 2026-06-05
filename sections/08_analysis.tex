@@ -156,7 +156,7 @@ useful intermittently.
 
 \begin{table}[t]
 \centering
-\caption{Per-seed Sharpe ratio statistics (32 seeds, test set, PW).
+\caption{Per-seed Sharpe ratio statistics (32 seeds, test set, EW).
          Ensemble SR = mean score over 32 seeds; Gain = Ensemble / Per-seed Mean.}
 \label{tab:seeds}
 \small
@@ -164,13 +164,13 @@ useful intermittently.
 \toprule
 \thead{Model} & \thead{Config} & \thead{Mean} & \thead{Std} & \thead{Min} & \thead{Max} & \thead{Ensemble} & \thead{Gain} \\
 \midrule
-LSTM & Price+Tech    & +0.70 & 0.80 & $-$0.78 & +2.51 & +2.46 & 3.5$\times$ \\
-LSTM & +Onchain      & +0.41 & 0.75 & $-$1.27 & +1.91 & +0.93 & 2.3$\times$ \\
-LSTM & +Trump+ETF    & +0.26 & 0.70 & $-$1.49 & +1.84 & +2.13 & 8.2$\times$ \\
+LSTM & Price+Tech    & +0.70 & 0.80 & $-$0.77 & +2.51 & +1.45 & 2.1$\times$ \\
+LSTM & +Onchain      & +0.41 & 0.75 & $-$1.27 & +1.91 & +1.13 & 2.8$\times$ \\
+LSTM & +Trump+ETF    & +0.26 & 0.70 & $-$1.49 & +1.84 & +2.03 & 7.8$\times$ \\
 \midrule
-TFT  & Price+Tech    & +0.24 & 0.84 & $-$1.11 & +2.18 & +0.19 & 0.8$\times$ \\
-TFT  & +Onchain      & +0.51 & 0.71 & $-$1.53 & +1.72 & +1.30 & 2.5$\times$ \\
-TFT  & +Trump+ETF    & +0.57 & 0.82 & $-$1.12 & +2.35 & +1.89 & 3.3$\times$ \\
+TFT  & Price+Tech    & +0.22 & 0.83 & $-$1.11 & +2.18 & +0.12 & 0.5$\times$ \\
+TFT  & +Onchain      & +0.49 & 0.71 & $-$1.53 & +1.74 & +1.32 & 2.7$\times$ \\
+TFT  & +Trump+ETF    & +0.58 & 0.82 & $-$1.12 & +2.35 & +1.76 & 3.0$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}

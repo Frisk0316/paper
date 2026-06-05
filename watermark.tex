@@ -1,10 +1,10 @@
 % NTU watermark following the NTU Library TDR upload guide.
 % Official settings: watermark.pdf, absolute scale 50%, opacity 50%,
-% behind the page, 2.5 cm from the top and right edges.
+% over page contents, 2.5 cm from the top and right edges.
 \usepackage{eso-pic}
 
 \newcommand{\NTUWatermark}{%
-  \AddToShipoutPictureBG{%
+  \AddToShipoutPictureFG{%
     \put(\LenToUnit{\dimexpr\paperwidth-2.5cm-103.5bp\relax},
          \LenToUnit{\dimexpr\paperheight-2.5cm-103.5bp\relax}){%
       \includegraphics[width=103.5bp]{NTU_official_watermark_50.png}%

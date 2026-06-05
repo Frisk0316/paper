@@ -164,12 +164,12 @@ Ensemble averaging is critical for deep learning models in this setting
 because per-seed Sharpe ratios are highly variable.
 For LSTM on the \texttt{Price+Technical} configuration, individual seeds
 produce Sharpe ratios with mean $+0.70$ and standard deviation $0.80$,
-with a minimum of $-0.78$ and maximum of $+2.51$.
-The 32-seed ensemble Sharpe ratio is $+2.46$—3.5$\times$ the per-seed
+with a minimum of $-0.77$ and maximum of $+2.51$.
+The 32-seed ensemble Sharpe ratio is $+1.45$—2.1$\times$ the per-seed
 mean—demonstrating that diverse random initializations learn
 complementary ranking patterns whose noise cancels in the average.
 The most extreme case is LSTM on \texttt{+Trump+ETF}: the per-seed mean
-is only $+0.26$, yet the ensemble achieves $+2.13$ (8.2$\times$
+is only $+0.26$, yet the ensemble achieves $+2.03$ (7.8$\times$
 amplification).
 This behavior conforms to the law of large numbers applied to the
 prediction errors, which are partially uncorrelated across seeds.

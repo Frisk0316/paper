@@ -6,10 +6,82 @@
 （2020-01-05 至 2026-03-15），共 $N = 86$ 種加密貨幣。
 原始資料檔保留 53 個特徵欄位；依據最終 v6 實驗設定，
 本文在六組資訊集中實際使用其中 42 個模型輸入特徵，
-其餘欄位保留於資料檔中供後續擴充，不列入本版實證比較。
+其餘 11 個欄位（DeFi 與衍生品特徵）保留於資料檔中供後續擴充，
+不列入本版實證比較。
+各特徵群組的來源、取得方式與涵蓋期間整理於表~\ref{tab:data_sources_zh}，
+使整個面板原則上可由其原始來源重建，而不僅依賴已儲存的陣列。
 橫截面固定為 2026 年 3 月市值排名前 86 的代幣，
 尚未上市資產在對應週次的缺失值以 $-99.99$ 標記，
 並在損失計算與評估時加以遮罩。
+
+\section{資料來源與取得}
+\label{sec:data:sources}
+
+表~\ref{tab:data_sources_zh} 列出各特徵群組的上游來源與下載方式。
+每個來源均在涵蓋範圍允許下取用整段樣本，
+而日頻或貼文層級的觀測值則聚合至面板的週頻（週末）日曆。
+
+\begin{table}[t]
+\centering
+\caption{各特徵群組的資料來源與取得方式。所有來源皆為公開資料，
+         僅 Farside ETF 表格需手動下載 CSV；日頻與貼文層級序列均聚合至週頻面板日曆。}
+\label{tab:data_sources_zh}
+\scriptsize
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} X}
+\toprule
+\thead{特徵群組（數量）} & \thead{來源} & \thead{取得方式與涵蓋範圍} \\
+\midrule
+價格與動量 (5)、技術指標 (6)
+  & Yahoo Finance \citep{yahoo_finance}
+  & \texttt{yfinance} 函式庫，免金鑰；以 \texttt{\{SYMBOL\}-USD} 下載 86 檔代幣的
+    週頻 OHLCV，並據以計算報酬與技術指標。全樣本。 \\
+鏈上 (5)
+  & Coin Metrics \citep{coinmetrics}
+  & Community REST API，免金鑰；活躍地址數、交易筆數、NVT、MVRV、交易所淨流量。
+    依各指標可得性逐幣取得。 \\
+總體與情緒 (11)
+  & alternative.me；Yahoo Finance \citep{alternativeme_fng,yahoo_finance}
+  & 恐懼與貪婪指數，以及 S\&P~500、DXY、VIX、黃金 (GLD)、白銀 (SLV)、道瓊 (DIA)
+    的報酬與相對成交量。對所有資產共用。 \\
+聚合 ETF 流量與成交量 (5)
+  & Farside；Yahoo Finance \citep{bitcoin_etf_farside,ethereum_etf_farside,yahoo_finance}
+  & Farside CSV（手動下載）加上 \texttt{yfinance} 聚合的美國現貨 ETF 成交量。
+    BTC ETF 自 2024-01-11、ETH ETF 自 2024-07-23 起。 \\
+預測市場 (1)
+  & Polymarket \citep{polymarket}
+  & Gamma 與 CLOB API，免金鑰；以成交量加權的 BTC 價格目標機率，經 logit 轉換。 \\
+細粒度 ETF 流量 (4)
+  & Farside Investors \citep{bitcoin_etf_farside,ethereum_etf_farside}
+  & Farside CSV（手動下載）；GBTC、BTC ex-GBTC、ETHE、ETH ex-ETHE 週頻流量。 \\
+川普社群媒體 (5)
+  & Truth Social／X 貼文存檔
+  & 貼文存檔：Truth Social（2022-02 至 2024-06）與 X/Twitter（2025-01 至 2026-03）；
+    每週發文數、大寫比例、關稅與加密主題分數、情緒。涵蓋範圍外的週次記為缺失。 \\
+\midrule
+市值（加權用）
+  & CoinGecko \citep{coingecko}
+  & 免費 API；週頻市值，用於市值加權與市場基準，而非作為預測特徵。 \\
+DeFi 與衍生品 (11，未使用)
+  & DefiLlama；Binance Futures
+  & TVL、DEX 成交量、協議費用、穩定幣市值，以及永續合約資金費率、未平倉量、多空比。
+    儲存於面板中但未納入 42 特徵的模型比較。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+每個週頻序列依其是否隨資產變動，採用兩種標準化方式之一。
+逐資產特徵（價格/動量、技術、鏈上）在每一週內做橫截面排名標準化，
+可消除跨週的尺度依賴且不引入前瞻資訊。
+市場層級序列（總體與情緒、聚合 ETF 流量與成交量、Polymarket 機率、
+Farside 細粒度流量，以及川普特徵）在同一週對所有資產取相同值，
+並以 52 週滾動 z 分數（最少 4 個觀測值）標準化，再截斷於 $[-3, 3]$。
+
+就現貨 ETF 流量而言，Farside Investors 的表格
+\citep{bitcoin_etf_farside,ethereum_etf_farside} 以 CSV 下載並解析：
+括號值代表流出（負值），破折號代表缺失或零流量的儲存格，
+每日資料則對「前一個面板日期至當前面板日期」之區間加總。
+最終面板追加的四個細粒度變數為 GBTC 流量、扣除 GBTC 的比特幣 ETF 總流量、
+ETHE 流量，以及扣除 ETHE 的以太幣 ETF 總流量，並同樣以 52 週規則標準化。
 
 \section{特徵類別}
 
@@ -59,9 +131,10 @@ Farside ETF 細粒度 & GBTC、BTC ex-GBTC、ETHE、ETH ex-ETHE       & 4  \\
 \label{sec:data:lookahead}
 
 本文特別檢查三種可能的前瞻偏差來源。
-第一，所有特徵均以 52 週滾動 Z 分數進行標準化；
-在第 $t$ 週，每個特徵只使用區間 $[t-51, t]$ 的均值與標準差，
-不會引用未來週次資料。
+第一，市場層級（非逐資產）特徵均以 52 週滾動 Z 分數進行標準化；
+在第 $t$ 週，這些特徵只使用區間 $[t-51, t]$ 的均值與標準差，
+不會引用未來週次資料（逐資產的價格、技術與鏈上特徵則改在每一週內
+做橫截面排名標準化，本身即不涉及跨週前瞻）。
 這種作法與 \citet{gu2020empirical} 的處理精神一致，
 即使包含當期值，其在 52 週窗口中的權重也僅約為 $1/52$，
 屬金融時間序列研究中的常見作法。
