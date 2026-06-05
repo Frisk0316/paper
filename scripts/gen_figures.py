@@ -107,6 +107,11 @@ MODEL_COLORS = {
 }
 
 
+def save_figure(path):
+    """Save with transparent canvas so page watermarks remain visible."""
+    plt.savefig(path, transparent=True)
+
+
 def load_model(model_type):
     """Load results and compute metrics for all feature configs."""
     npz_path = os.path.join(CKPT_DIR, f'{model_type}_results.npz')
@@ -148,7 +153,7 @@ def fig1_per_model_cumulative():
 
         plt.tight_layout()
         path = os.path.join(FIG_DIR, f'cum_returns_{model}.pdf')
-        plt.savefig(path)
+        save_figure(path)
         plt.close()
         print(f"  Saved: {path}")
 
@@ -185,7 +190,7 @@ def fig2_combined_cumulative():
 
     plt.tight_layout()
     path = os.path.join(FIG_DIR, 'cum_returns_combined.pdf')
-    plt.savefig(path)
+    save_figure(path)
     plt.close()
     print(f"  Saved: {path}")
 
@@ -223,7 +228,7 @@ def fig3_decile_sharpe():
 
     plt.tight_layout()
     path = os.path.join(FIG_DIR, 'decile_sharpe_cs_gated.pdf')
-    plt.savefig(path)
+    save_figure(path)
     plt.close()
     print(f"  Saved: {path}")
 
@@ -261,7 +266,7 @@ def fig4_feat_importance():
 
     plt.tight_layout()
     path = os.path.join(FIG_DIR, 'feat_importance_tft.pdf')
-    plt.savefig(path)
+    save_figure(path)
     plt.close()
     print(f"  Saved: {path}")
 
